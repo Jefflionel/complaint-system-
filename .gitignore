@@ -21,3 +21,24 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+
+### Yaoundé Complaints System ###
+# Environments
+.env
+.venv
+env/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Docker
+postgres_data/
+
+# Uploads
+backend/uploads/
+
+# OS generated files
+.DS_Store
+Thumbs.db
