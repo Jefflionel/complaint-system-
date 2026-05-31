@@ -2,11 +2,13 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Fetch the database URL from docker-compose environment variables
-SQLALCHEMY_DATABASE_URL = os.getenv(
-    "DATABASE_URL", 
-    "postgresql://yaounde_admin:securepassword123@localhost:5432/yaounde_complaints"
-)
+# Fetch the database URL strictly from the environment variable
+# No hardcoded fallback string allowed!
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Security check: Prevent the app from starting if the secret is missing
+if not SQLALCHEMY_DATABASE_URL:
+    raise ValueError("CRITICAL ERROR: DATABASE_URL environment variable is not set!")
 
 # Create the SQLAlchemy engine
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
