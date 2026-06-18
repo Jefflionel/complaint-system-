@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Command Center - Yaoundé</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module">
+        import { GOOGLE_MAPS_API_KEY } from './js/config.js';
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+        script.async = true;
+        document.head.appendChild(script);
+    </script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { brand: { green: '#16a34a', dark: '#15803d', light: '#dcfce7' } } } } }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased overflow-hidden">
+
+    <div class="flex h-screen w-full relative">
+
+        <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
+
+        <aside id="app-sidebar" class="w-64 bg-gray-900 text-white flex flex-col shadow-2xl z-30 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out">
+            <div class="h-16 flex items-center px-6 border-b border-gray-800 bg-black bg-opacity-20">
+                <h1 class="text-xl font-bold tracking-wider">Municipal<span class="text-brand-green">Command</span></h1>
+            </div>
+
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <button onclick="window.switchView('dashboard-view', this)" data-view="dashboard-view" class="sidebar-btn w-full flex items-center px-4 py-3 bg-brand-green text-white rounded-lg font-semibold transition-colors">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                    Master List
+                </button>
+                <button onclick="window.switchView('analytics-view', this)" data-view="analytics-view" class="sidebar-btn w-full flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg font-semibold transition-colors">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Analytics
+                </button>
+                <button onclick="window.switchView('suggestions-view', this)" data-view="suggestions-view" class="sidebar-btn w-full flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg font-semibold transition-colors">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    Public Forum
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-gray-800">
+                <button id="logout-btn" class="w-full flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-bold transition-colors">Logout</button>
+            </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col bg-gray-100 overflow-hidden relative">
+            <header class="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:px-8 z-10">
+                <div class="flex items-center gap-3">
+                    <button id="mobile-menu-btn" class="md:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    <h2 id="page-title" class="text-xl font-bold text-gray-800">Incoming Reports</h2>
+                </div>
+                <span class="bg-brand-light text-brand-dark px-3 py-1 rounded-full text-xs font-bold border border-brand-green hidden sm:inline-block">STAFF PORTAL</span>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-4 md:p-8 relative">
+                
+                <div id="dashboard-view" class="max-w-7xl mx-auto hidden view-section">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-blue-500">
+                            <h3 class="text-gray-500 font-semibold text-sm uppercase">Total Complaints</h3>
+                            <p id="stat-total" class="text-3xl font-bold mt-2">0</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-yellow-500">
+                            <h3 class="text-gray-500 font-semibold text-sm uppercase">Pending Review</h3>
+                            <p id="stat-pending" class="text-3xl font-bold mt-2 text-yellow-600">0</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-brand-green">
+                            <h3 class="text-gray-500 font-semibold text-sm uppercase">Resolved</h3>
+                            <p id="stat-resolved" class="text-3xl font-bold mt-2 text-brand-green">0</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600 uppercase text-xs font-bold border-b">
+                                    <th class="p-4">Ticket ID</th>
+                                    <th class="p-4">District</th>
+                                    <th class="p-4">Category</th>
+                                    <th class="p-4">Status</th>
+                                    <th class="p-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staff-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="review-view" class="max-w-4xl mx-auto hidden view-section">
+                    <button onclick="window.switchView('dashboard-view')" class="text-gray-500 hover:text-gray-800 font-semibold mb-6 flex items-center">
+                        ← Back to Master List
+                    </button>
+
+                    <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-t-4 border-t-brand-green">
+                        <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
+                            <div>
+                                <h2 id="r-title" class="text-2xl font-bold">Complaint Title</h2>
+                                <p class="text-gray-500 text-sm mt-1">Ticket: <span id="r-ticket">#123</span> | District: <span id="r-district">Yaoundé I</span></p>
+                            </div>
+                            <div class="text-left md:text-right w-full md:w-auto">
+                                <span id="r-badge" class="px-3 py-1 rounded-full text-xs font-bold border bg-yellow-100 text-yellow-800 mb-3 inline-block shadow-sm">PENDING</span>
+                                <div id="r-reporter" class="bg-gray-50 border px-4 py-2 rounded text-sm"></div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 border-t pt-6">
+                            <div class="bg-gray-50 p-4 rounded border">
+                                <h3 class="font-semibold text-gray-700 mb-1">Description</h3>
+                                <p id="r-desc" class="text-gray-800 text-sm mb-4">...</p>
+                                
+                                <h3 class="font-semibold text-gray-700 mb-1">Location / Landmark</h3>
+                                <p id="r-location" class="text-gray-800 text-sm mb-6">...</p>
+
+                                <h3 class="font-semibold text-gray-700 mb-2">GPS Evidence</h3>
+                                <button type="button" id="s-view-map-btn" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold shadow hover:bg-blue-700 transition hidden flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> View Full Map
+                                </button>
+                                <div id="s-no-gps-msg" class="text-gray-500 text-sm font-semibold flex items-center bg-gray-200 px-4 py-2 rounded inline-block">
+                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg> No GPS localisation
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-4 rounded border flex flex-col items-center justify-center">
+                                <h3 class="font-semibold text-gray-700 mb-2 w-full text-left">Evidence Photo</h3>
+                                <img id="r-photo" src="" class="max-h-48 rounded shadow hidden object-contain cursor-pointer hover:opacity-80 transition-opacity">
+                                <p id="r-no-photo" class="text-gray-500 italic text-sm">No photo provided</p>
+                            </div>
+                        </div>
+
+                        <form id="update-status-form" class="space-y-4 border-t pt-6 bg-gray-50 p-4 md:p-6 rounded-lg border">
+                            <input type="hidden" id="r-id">
+                            <div>
+                                <label class="block font-semibold mb-1 text-gray-800">Update Status</label>
+                                <select id="r-status" class="w-full px-4 py-2 border rounded shadow-sm focus:ring-2 focus:ring-brand-green outline-none">
+                                    <option value="Pending">Pending</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Resolved">Resolved</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                            </div>
+
+                            <div id="resolution-fields" class="hidden space-y-4 border-t border-gray-200 pt-4 mt-4">
+                                <div>
+                                    <label class="block font-semibold mb-1 text-brand-dark">Resolution Note (Mandatory) <span class="text-red-500">*</span></label>
+                                    <textarea id="r-res-note" rows="3" class="w-full px-4 py-2 border border-green-300 rounded focus:ring-2 focus:ring-brand-green outline-none" placeholder="Explain what was done to fix this issue..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold mb-1 text-gray-700">Resolution Evidence (Optional Photo)</label>
+                                    <input type="file" id="r-res-photo" accept="image/*" class="w-full px-4 py-1 border rounded bg-white">
+                                </div>
+                            </div>
+                            
+                            <div id="action-block" class="mt-4">
+                                <button type="submit" class="w-full bg-gray-900 text-white py-3 rounded-lg font-bold shadow hover:bg-black transition-colors">
+                                    Save Changes
+                                </button>
+                            </div>
+                            <div id="locked-block" class="mt-4 hidden text-center bg-gray-200 text-gray-600 font-bold py-3 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
+                                Ticket is Closed
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="analytics-view" class="max-w-7xl mx-auto hidden view-section">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">District Analytics Overview</h2>
+                        <button id="refresh-charts-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded shadow transition-colors font-semibold flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Refresh Data
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                            <h3 class="text-lg font-bold text-gray-700 mb-4 text-center border-b pb-2">Complaints by Status</h3>
+                            <div class="relative h-72 w-full flex justify-center">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                            <h3 class="text-lg font-bold text-gray-700 mb-4 text-center border-b pb-2">Complaints by Category</h3>
+                            <div class="relative h-72 w-full">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- VIEW 4: SUGGESTIONS -->
+                <div id="suggestions-view" class="max-w-6xl mx-auto hidden view-section">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Public Forum Moderation</h2>
+                            <p class="text-gray-500 text-sm">Community ideas prioritized by citizen votes.</p>
+                        </div>
+                        <button id="refresh-forum-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded shadow transition-colors font-semibold flex items-center">
+                            Refresh Data
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600 uppercase text-xs font-bold border-b">
+                                    <th class="p-4 w-16 text-center">Votes</th>
+                                    <th class="p-4">Idea Title & Description</th>
+                                    <th class="p-4 w-32">Category</th>
+                                    <th class="p-4 w-32">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="forum-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div id="lightbox-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-95 z-50 hidden flex justify-center items-center backdrop-blur-sm cursor-pointer transition-opacity duration-300">
+        <span class="absolute top-6 right-8 text-white text-4xl font-bold hover:text-red-500 transition-colors">&times;</span>
+        <img id="lightbox-img" src="" class="max-w-[90vw] max-h-[90vh] object-contain shadow-2xl rounded-lg border-4 border-white">
+    </div>
+
+    <div id="staff-map-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-95 z-50 hidden flex-col justify-center items-center backdrop-blur-sm">
+        <div class="w-full max-w-5xl h-[85vh] bg-white rounded-xl overflow-hidden relative flex flex-col shadow-2xl">
+            <div class="p-4 bg-gray-100 flex justify-between items-center border-b">
+                <h3 class="font-bold text-lg text-gray-800">Complaint Location Tracking</h3>
+                <button type="button" id="close-staff-map-btn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded shadow font-bold transition-colors">Close Map</button>
+            </div>
+            <div id="staff-map" class="w-full flex-grow"></div>
+        </div>
+    </div>
+    <!-- REUSABLE SUGGESTION DETAILS MODAL -->
+    <div id="suggestion-modal" class="fixed inset-0 bg-gray-900 bg-opacity-80 z-50 hidden flex-col justify-center items-center backdrop-blur-sm px-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+            <div class="p-6 border-b flex justify-between items-start bg-gray-50">
+                <div>
+                    <h3 id="modal-s-title" class="text-2xl font-bold text-gray-900 mb-2">Title</h3>
+                    <span id="modal-s-cat" class="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded font-semibold border border-gray-300">Category</span>
+                </div>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-red-500 font-bold text-3xl leading-none">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[60vh]">
+                <h4 class="text-sm font-bold text-gray-500 uppercase mb-2">Full Description</h4>
+                <p id="modal-s-desc" class="text-gray-800 leading-relaxed whitespace-pre-wrap"></p>
+            </div>
+            <div class="bg-gray-100 p-4 border-t flex justify-between items-center text-sm text-gray-600 font-semibold">
+                <span>District: Yaoundé <span id="modal-s-dist" class="font-bold"></span></span>
+                <span id="modal-s-date"></span>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="./js/staff.js"></script>
+</body>
+</html>

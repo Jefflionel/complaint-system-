@@ -1,4 +1,4 @@
-from typing import Annotated
+# backend/routers/auth.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
@@ -6,78 +6,57 @@ import models
 import schemas
 import security
 
-# Define the router
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
-# Reusable dependency type for SonarQube S8410 compliance
-DbSession = Annotated[Session, Depends(get_db)]
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if db_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered."
+        )
 
-# ═══════════════════════════════════════════════════════
-# CITIZEN ENDPOINTS
-# ═══════════════════════════════════════════════════════
-@router.post(
-    "/register", 
-    response_model=schemas.UserResponse, 
-    status_code=status.HTTP_201_CREATED,
-    responses={400: {"description": "Email is already registered"}} # SonarQube S8415 compliance
-)
-def register_citizen(user: schemas.UserCreate, db: DbSession):
-    """Registers a new citizen and securely separates their identity data."""
-    
-    # 1. Check if email already exists
-    existing_user = db.query(models.User).filter(models.User.email == user.email).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email is already registered")
-
-    # 2. Hash the password and create the core User account
     hashed_password = security.get_password_hash(user.password)
+
     new_user = models.User(
         email=user.email,
         password_hash=hashed_password,
         language_preference=user.language_preference
     )
     db.add(new_user)
-    db.flush()  
+    db.commit()
+    db.refresh(new_user)
 
-    # 3. Create the separated Identity record (The Privacy Vault)
     new_identity = models.UserIdentity(
         user_id=new_user.id,
         full_name=user.full_name,
         phone=user.phone
     )
     db.add(new_identity)
-    
-    # 4. Commit both to the database safely
     db.commit()
-    db.refresh(new_user)
-    return new_user
+
+    return {"message": "User registered successfully"}
+
 
 @router.post("/login", response_model=schemas.Token)
-def login_citizen(credentials: schemas.LoginRequest, db: DbSession):
-    """Authenticates a citizen and returns a JWT."""
-    user = db.query(models.User).filter(models.User.email == credentials.email).first()
+def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
     
-    if not user or not security.verify_password(credentials.password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    
-    if user.account_status != "active":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is suspended")
+    # 1. Check CITIZENS
+    user = db.query(models.User).filter(models.User.email == request.email).first()
+    if user and security.verify_password(request.password, user.password_hash):
+        # FIX: We now pass the user.id instead of the email!
+        access_token = security.create_access_token(data={"sub": str(user.id), "type": "citizen"})
+        return {"access_token": access_token, "token_type": "bearer", "user_type": "citizen"}
 
-    access_token = security.create_access_token(data={"sub": str(user.id), "type": "citizen"})
-    return {"access_token": access_token, "token_type": "bearer", "user_type": "citizen"}
+    # 2. Check STAFF
+    staff = db.query(models.Staff).filter(models.Staff.email == request.email).first()
+    if staff and security.verify_password(request.password, staff.password_hash):
+        # FIX: We now pass the staff.id instead of the email!
+        access_token = security.create_access_token(data={"sub": str(staff.id), "type": "staff"})
+        return {"access_token": access_token, "token_type": "bearer", "user_type": "staff"}
 
-# ═══════════════════════════════════════════════════════
-# STAFF ENDPOINTS
-# ═══════════════════════════════════════════════════════
-#Staff registration is handled internally via database seeding
-
-@router.post("/staff/login", response_model=schemas.Token)
-def login_staff(credentials: schemas.LoginRequest, db: DbSession):
-    """Authenticates a municipal worker and returns a JWT."""
-    staff = db.query(models.Staff).filter(models.Staff.email == credentials.email).first()
-    
-    if not staff or not security.verify_password(credentials.password, staff.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-
-    access_token = security.create_access_token(data={"sub": str(staff.id), "type": "staff"})
-    return {"access_token": access_token, "token_type": "bearer", "user_type": "staff"}
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid email or password."
+    )

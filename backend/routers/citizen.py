@@ -1,3 +1,4 @@
+# backend/routers/citizen.py
 import os
 import shutil
 import uuid
@@ -22,6 +23,7 @@ async def submit_complaint(
     current_user_id: Annotated[int, Depends(security.get_current_user_id)],
     title: Annotated[str, Form(...)],
     description: Annotated[str, Form(...)],
+    location: Annotated[str, Form(...)], # <-- NEW LOCATION FIELD
     district_id: Annotated[int, Form(...)],
     category_name: Annotated[schemas.ComplaintCategoryKey, Form(...)],
     is_anonymous: Annotated[bool, Form()] = False,
@@ -30,7 +32,9 @@ async def submit_complaint(
     photo: Annotated[UploadFile, File(...)] = ... 
 ):
     ticket_id = generate_ticket_id(db)
-    final_user_id = None if is_anonymous else current_user_id
+    
+    # FIX: We NO LONGER set user_id to None here. 
+    # We always save it to keep the citizen connected to their ticket!
     
     file_extension = photo.filename.split(".")[-1]
     unique_filename = f"{ticket_id}_{uuid.uuid4().hex[:8]}.{file_extension}"
@@ -41,12 +45,13 @@ async def submit_complaint(
 
     new_complaint = models.Complaint(
         ticket_id=ticket_id,
-        user_id=final_user_id,
+        user_id=current_user_id, # FIX: Always the logged-in user!
         title=title,
         description=description,
+        location=location,       # NEW: Save the location text
         category=category_name,
         district_id=district_id,
-        is_anonymous=is_anonymous,
+        is_anonymous=is_anonymous, # This flag is saved to hide names later
         latitude=latitude,
         longitude=longitude,
         photo_path=file_path,  

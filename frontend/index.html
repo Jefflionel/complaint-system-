@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yaoundé Citizen Complaints</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Customizing the Tailwind theme to match your White & Green requirement
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            green: '#16a34a', // Standard green
+                            dark: '#15803d',  // Hover state
+                            light: '#dcfce7'  // Background tints
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+
+    <div id="home-view" class="min-h-screen flex flex-col items-center justify-center p-6 block">
+        
+        <div class="max-w-2xl text-center space-y-8">
+            <h1 class="text-5xl font-extrabold text-gray-900">
+                Better <span class="text-brand-green">Yaoundé</span> Starts Here
+            </h1>
+            <p class="text-xl text-gray-600">
+                Report local issues, track municipal responses, and suggest community improvements—all in one place.
+            </p>
+            
+            <div class="flex gap-4 justify-center">
+                <button onclick="switchView('login-view')" class="bg-brand-green hover:bg-brand-dark text-white px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
+                    Log In
+                </button>
+                <button onclick="switchView('register-view')" class="bg-white hover:bg-gray-50 text-brand-green border-2 border-brand-green px-8 py-3 rounded-lg font-bold transition-colors">
+                    Sign Up
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="login-view" class="min-h-screen flex items-center justify-center p-6 hidden">
+        
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-t-4 border-brand-green">
+            <h2 class="text-3xl font-bold mb-6 text-center">Welcome Back</h2>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Email</label>
+                    <input type="email" id="login-email" class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-brand-green focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Password</label>
+                    <input type="password" id="login-password" class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-brand-green focus:outline-none" required>
+                </div>
+                <div id="login-error" class="hidden text-red-600 text-sm font-semibold text-center bg-red-50 p-2 rounded"></div>
+                <button type="submit" class="w-full bg-brand-green text-white py-3 rounded-md font-bold hover:bg-brand-dark transition-colors mt-6">
+                    Access Dashboard
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-sm">
+                <button onclick="switchView('home-view')" class="text-gray-500 hover:text-gray-800 underline">← Back to Home</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="register-view" class="min-h-screen flex items-center justify-center p-6 hidden">
+        
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-t-4 border-brand-green">
+            <h2 class="text-3xl font-bold mb-6 text-center">Create Account</h2>
+            
+            <form id="register-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Full Name</label>
+                    <input type="text" id="reg-name" class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-brand-green focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Email</label>
+                    <input type="email" id="reg-email" class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-brand-green focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Phone Number</label>
+                    <input type="tel" id="reg-phone" 
+                            pattern="^6[0-9]{8,}$" 
+                            title="Phone number must start with 6 and contain at least 9 digits" 
+                            placeholder="e.g., 670123456" 
+                        class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-brand-green focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Password</label>
+                    <input type="password" id="reg-password" 
+                           class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-brand-green focus:outline-none" 
+                           required 
+                           minlength="8" 
+                           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" 
+                           title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters">
+                </div>
+                <div id="register-error" class="hidden text-red-600 text-sm font-semibold text-center bg-red-50 p-2 rounded mb-4"></div>
+                <button type="submit" class="w-full bg-brand-green text-white py-3 rounded-md font-bold hover:bg-brand-dark transition-colors mt-6">
+                    Create Citizen Account
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-sm">
+                <button onclick="switchView('home-view')" class="text-gray-500 hover:text-gray-800 underline">← Back to Home</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function switchView(targetViewId) {
+            // 1. Get all the view containers
+            const home = document.getElementById('home-view');
+            const login = document.getElementById('login-view');
+            const register = document.getElementById('register-view');
+
+            // 2. Hide all of them by adding the Tailwind 'hidden' class
+            home.classList.add('hidden');
+            login.classList.add('hidden');
+            register.classList.add('hidden');
+
+            // 3. Un-hide the specific one the user requested
+            document.getElementById(targetViewId).classList.remove('hidden');
+        }
+    </script>
+    <script type="module" src="./js/auth.js"></script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+# backend/routers/suggestions.py
 from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
@@ -17,7 +18,7 @@ def submit_suggestion(
     db: DbSession,
     current_user_id: Annotated[int, Depends(security.get_current_user_id)]
 ):
-    """Feature F1: Citizens submit improvement ideas."""
+    """Citizens submit improvement ideas."""
     new_idea = models.Suggestion(
         user_id=current_user_id,
         title=suggestion.title,
@@ -29,52 +30,40 @@ def submit_suggestion(
     db.commit()
     db.refresh(new_idea)
     
-    # Add a default support count of 0 for the response
     setattr(new_idea, 'support_count', 0)
     return new_idea
 
-@router.get("/", response_model=List[schemas.SuggestionResponse])
-def get_public_suggestions(
+@router.get("/district/{district_id}", response_model=List[schemas.SuggestionResponse])
+def get_district_suggestions(
+    district_id: int,
     db: DbSession,
-    district_id: Optional[int] = None,
-    category: Optional[schemas.SuggestionCategoryKey] = None
 ):
-    """
-    Feature F3 & F6: Fetches all suggestions, dynamically calculates upvotes, 
-    sorts by most popular, and allows filtering by district or category.
-    """
-    # 1. Build a smart query that counts upvotes automatically
+    """Fetches all suggestions for a district, sorted by most popular."""
+    # Build a smart query that counts upvotes automatically
     query = db.query(
         models.Suggestion, 
-        func.count(models.SuggestionSupport.id).label('support_count')
-    ).outerjoin(models.SuggestionSupport).group_by(models.Suggestion.id)
+        func.count(models.SuggestionSupport.id).label('dynamic_count')
+    ).outerjoin(models.SuggestionSupport)\
+     .filter(models.Suggestion.district_id == district_id)\
+     .group_by(models.Suggestion.id)\
+     .order_by(func.count(models.SuggestionSupport.id).desc()).all()
 
-    # 2. Apply optional filters
-    if district_id:
-        query = query.filter(models.Suggestion.district_id == district_id)
-    if category:
-        query = query.filter(models.Suggestion.category == category)
-
-    # 3. Sort by highest upvotes first
-    results = query.order_by(func.count(models.SuggestionSupport.id).desc()).all()
-
-    # 4. Map the results cleanly to our schema
+    # Map the results cleanly to our schema
     final_suggestions = []
-    for row in results:
+    for row in query:
         idea = row.Suggestion
-        setattr(idea, 'support_count', row.support_count)
+        setattr(idea, 'support_count', row.dynamic_count)
         final_suggestions.append(idea)
         
     return final_suggestions
 
-@router.post("/{suggestion_id}/support", status_code=status.HTTP_201_CREATED)
+@router.patch("/{suggestion_id}/upvote")
 def upvote_suggestion(
     suggestion_id: int,
     db: DbSession,
     current_user_id: Annotated[int, Depends(security.get_current_user_id)]
 ):
-    """Feature F4 & G11: Add support to an idea. Prevents double-voting."""
-    # Ensure the idea exists
+    """Adds support to an idea and returns the new count. Prevents double-voting."""
     idea = db.query(models.Suggestion).filter(models.Suggestion.id == suggestion_id).first()
     if not idea:
         raise HTTPException(status_code=404, detail="Suggestion not found")
@@ -84,7 +73,11 @@ def upvote_suggestion(
     try:
         db.add(new_support)
         db.commit()
-        return {"message": "Support added successfully!"}
+        
+        # Calculate the new total and send it back to the frontend
+        new_count = db.query(models.SuggestionSupport).filter(models.SuggestionSupport.suggestion_id == suggestion_id).count()
+        return {"support_count": new_count}
+        
     except IntegrityError:
         # The UniqueConstraint triggered because they already voted!
         db.rollback()

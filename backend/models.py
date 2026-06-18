@@ -1,3 +1,4 @@
+# backend/models.py
 from sqlalchemy import (
     Column, Integer, String, Boolean, ForeignKey, Text,
     DECIMAL, DateTime, UniqueConstraint
@@ -80,6 +81,7 @@ class Complaint(Base):
     is_anonymous = Column(Boolean, default=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
+    location = Column(String(255), nullable=True)  # <-- NEW LOCATION FIELD
     category = Column(String(50), nullable=False)        
     district_id = Column(Integer, ForeignKey("districts.id"), nullable=False)
     latitude = Column(DECIMAL(10, 7), nullable=True)     

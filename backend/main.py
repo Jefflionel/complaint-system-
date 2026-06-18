@@ -4,6 +4,9 @@ from database import engine, Base, SessionLocal
 import models
 import security  # <-- Required for hashing the default passwords
 from routers import auth, public, citizen, staff, suggestions
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 
 # ═══════════════════════════════════════════════════════
 # DATABASE SEEDING LOGIC
@@ -69,6 +72,20 @@ async def lifespan(app: FastAPI):
 
 # Initialize FastAPI
 app = FastAPI(title="Yaoundé Complaints API", lifespan=lifespan)
+
+# Create uploads folder if it doesn't exist
+os.makedirs("uploads", exist_ok=True)
+# Expose it to the internet
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins (frontend addresses)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, PUT, DELETE, OPTIONS)
+    allow_headers=["*"],  # Allows all headers
+)
 
 # Register the routes
 app.include_router(auth.router)

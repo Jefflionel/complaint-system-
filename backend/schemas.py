@@ -1,3 +1,4 @@
+# backend/schemas.py
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional
 from datetime import datetime
@@ -64,14 +65,12 @@ class ComplaintCategoryKey(str, Enum):
     OTHER = "OTHER"
 
 class ComplaintStatus(str, Enum):
-    """The strict, allowed workflow states (Feature C2)."""
     PENDING = "Pending"
     IN_PROGRESS = "In Progress"
     RESOLVED = "Resolved"
     REJECTED = "Rejected"
 
 class DepartmentKey(str, Enum):
-    """Departments a complaint can be assigned to by staff (Feature D5)."""
     ROADS = "Roads"
     WASTE = "Waste"
     WATER = "Water"
@@ -79,11 +78,24 @@ class DepartmentKey(str, Enum):
     DRAINAGE = "Drainage"
 
 # ═══════════════════════════════════════════════════════
+# NESTED USER INFO FOR STAFF DASHBOARD (THE ANONYMOUS FIX)
+# ═══════════════════════════════════════════════════════
+class UserIdentityNested(BaseModel):
+    full_name: str
+    phone: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class UserNested(BaseModel):
+    identity: Optional[UserIdentityNested] = None
+    model_config = ConfigDict(from_attributes=True)
+
+# ═══════════════════════════════════════════════════════
 # COMPLAINT SCHEMAS
 # ═══════════════════════════════════════════════════════
 class ComplaintCreate(BaseModel):
     title: str
     description: str
+    location: str 
     district_id: int = Field(..., ge=1, le=7)
     category_name: ComplaintCategoryKey
     is_anonymous: bool = False
@@ -94,15 +106,25 @@ class ComplaintResponse(BaseModel):
     id: int
     ticket_id: str
     title: str
+    description: str          
+    location: Optional[str]   
+    district_id: int          
     category: ComplaintCategoryKey
-    status: ComplaintStatus  # Now enforced by the Enum
+    status: ComplaintStatus  
+    latitude: Optional[float] 
+    longitude: Optional[float]
+    photo_path: Optional[str] 
+    is_anonymous: bool         # Tells the frontend if it's hidden
+    user: Optional[UserNested] = None # Passes the user data to the frontend
+    resolution_notes: Optional[str] = None       
+    resolution_photo_path: Optional[str] = None
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
-    # ═══════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════
 # SUGGESTION BOX SCHEMAS 
 # ═══════════════════════════════════════════════════════
 class SuggestionCategoryKey(str, Enum):
-    """Specific categories for the public forum (Feature F2)."""
     ENVIRONMENT = "Environment"
     INFRASTRUCTURE = "Infrastructure"
     YOUTH = "Youth"
@@ -123,6 +145,6 @@ class SuggestionResponse(BaseModel):
     category: SuggestionCategoryKey
     district_id: int
     created_at: datetime
-    support_count: int = 0  # We will calculate this on the fly!
+    support_count: int = 0  
     
     model_config = ConfigDict(from_attributes=True)
