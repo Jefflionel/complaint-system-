@@ -1,0 +1,16 @@
+{
+  "name": "Yaoundé Civic Management",
+  "short_name": "CitizenHub",
+  "description": "Report local issues and participate in community forums.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#16a34a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1006/1006900.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

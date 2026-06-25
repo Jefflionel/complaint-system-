@@ -60,3 +60,107 @@ def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid email or password."
     )
+
+# Add to the bottom of backend/routers/auth.py
+
+@router.get("/me")
+def get_my_profile(
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(security.get_current_user_id)
+):
+    """Fetches the currently logged-in user's profile and identity data."""
+    user = db.query(models.User).filter(models.User.id == current_user_id).first()
+    identity = db.query(models.UserIdentity).filter(models.UserIdentity.user_id == current_user_id).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {
+        "id": user.id,
+        "email": user.email,
+        "identity": {
+            "full_name": identity.full_name if identity else "Not provided",
+            "phone": identity.phone if identity else "Not provided"
+        }
+    }
+
+@router.patch("/me")
+def update_my_profile(
+    data: schemas.UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(security.get_current_user_id)
+):
+    """Updates the user's name, phone, or password."""
+    user = db.query(models.User).filter(models.User.id == current_user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update Identity
+    if data.full_name or data.phone:
+        identity = db.query(models.UserIdentity).filter(models.UserIdentity.user_id == current_user_id).first()
+        
+        if not identity:
+            identity = models.UserIdentity(user_id=current_user_id)
+            db.add(identity)
+            
+        if data.full_name:
+            identity.full_name = data.full_name
+        if data.phone:
+            identity.phone = data.phone
+
+    # Update Password safely
+    if data.password:
+        user.password_hash = security.get_password_hash(data.password)
+
+    db.commit()
+    return {"message": "Profile updated successfully"}
+
+@router.get("/staff/me")
+def get_staff_profile(
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(security.get_current_user_id)
+):
+    """Fetches the currently logged-in staff's profile data."""
+    staff = db.query(models.Staff).filter(models.Staff.id == current_user_id).first()
+    
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff not found")
+
+    # Safely fetch the name (checking if your database uses 'name' or 'full_name' for staff)
+    staff_name = getattr(staff, 'name', getattr(staff, 'full_name', 'Admin User'))
+
+    return {
+        "id": staff.id,
+        "email": staff.email,
+        "identity": {
+            "full_name": staff_name,
+            "phone": "N/A" # Staff don't use phone numbers
+        }
+    }
+
+@router.patch("/staff/me")
+def update_staff_profile(
+    data: schemas.UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(security.get_current_user_id)
+):
+    """Updates the staff's name or password."""
+    staff = db.query(models.Staff).filter(models.Staff.id == current_user_id).first()
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff not found")
+
+    if data.full_name:
+        if hasattr(staff, 'name'):
+            staff.name = data.full_name
+        elif hasattr(staff, 'full_name'):
+            staff.full_name = data.full_name
+        
+    if data.password:
+        # Checking to see which password column name your staff table uses
+        if hasattr(staff, 'password_hash'):
+            staff.password_hash = security.get_password_hash(data.password)
+        elif hasattr(staff, 'hashed_password'):
+            staff.hashed_password = security.get_password_hash(data.password)
+
+    db.commit()
+    return {"message": "Staff profile updated successfully"}

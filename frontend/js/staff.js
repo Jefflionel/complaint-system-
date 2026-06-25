@@ -4,7 +4,8 @@ import { showToast } from './utils/toast.js';
 import { setupUI } from './utils/ui.js';
 import { setupStaffMap, showStaffMap } from './utils/maps.js';
 import { loadAnalytics, setupAnalyticsEvents } from './utils/analytics.js';
-import { initStaffForum } from './staff-forum.js'; // <-- NEW
+import { initStaffForum } from './staff-forum.js'; 
+import { initProfile } from './utils/profile.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
@@ -25,7 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setupStaffMap();
     setupAnalyticsEvents();
     loadAnalytics();
-    initStaffForum(); // <-- INITIALIZE FORUM
+    initStaffForum(); 
+    initProfile();
 
     let currentComplaints = [];
 

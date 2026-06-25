@@ -2,7 +2,9 @@
 import { apiRequest } from './api.js';
 import { showToast } from './utils/toast.js';
 import { setupUI } from './utils/ui.js';
-import { initCitizenForum } from './citizen-forum.js'; // <-- NEW
+import { initCitizenForum } from './citizen-forum.js'; 
+import { saveComplaintOffline, syncOfflineComplaints } from './utils/offline.js';
+import { initProfile } from './utils/profile.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
@@ -19,7 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize UI and Forum
     setupUI();
-    initCitizenForum(); // <-- INITIALIZE FORUM
+    initCitizenForum(); 
+    initProfile();
 
     let currentComplaints = [];
 
@@ -163,11 +166,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     openBtn.addEventListener('click', () => {
+        // ════ OFFLINE GPS INTERCEPTOR ════
+        if (!navigator.onLine) {
+            showToast("Interactive Maps are unavailable offline. Please type your location in the text box.", "error");
+            
+            // Visually disable the button temporarily
+            openBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            setTimeout(() => openBtn.classList.remove('opacity-50', 'cursor-not-allowed'), 3000);
+            return; // Block the map from opening!
+        }
+
         mapOverlay.classList.remove('hidden');
         mapOverlay.classList.add('flex');
         if (!mapInitialized && typeof google !== 'undefined') initGoogleMap();
     });
-
+    
     closeBtn.addEventListener('click', () => {
         mapOverlay.classList.add('hidden');
         mapOverlay.classList.remove('flex');
@@ -200,9 +213,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const photoFile = document.getElementById('c-photo').files[0];
         if (photoFile) formData.append('photo', photoFile);
 
+        // ════ OFFLINE CHECK ════
+        if (!navigator.onLine) {
+            try {
+                await saveComplaintOffline(formData);
+                showToast("No internet! Complaint saved to your phone. It will upload automatically when connection is restored.", "success");
+                
+                // Clean up UI
+                form.reset(); 
+                if (marker) { marker.setMap(null); marker = null; }
+                document.getElementById('c-lat').value = '';
+                document.getElementById('c-lng').value = '';
+                document.getElementById('map-status').classList.add('hidden');
+                openBtn.classList.remove('bg-brand-light', 'text-brand-dark', 'border-2', 'border-brand-green');
+                openBtn.classList.add('bg-blue-600', 'text-white');
+                openBtn.innerHTML = 'Open Google Maps';
+
+                window.switchView('dashboard-view');
+            } catch (err) {
+                showToast("Failed to save offline: " + err.message, "error");
+            }
+            return; // Stop execution here!
+        }
+
+        // ════ ONLINE: NORMAL SUBMISSION ════
         try {
             await apiRequest('/citizen/complaints/', { method: 'POST', body: formData });
             showToast("Complaint submitted successfully!", "success");
+            
             form.reset(); 
             if (marker) { marker.setMap(null); marker = null; }
             document.getElementById('c-lat').value = '';
@@ -219,5 +257,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Check for pending offline uploads when the app loads!
+    syncOfflineComplaints();
+
     loadComplaints();
+
+    // Listen for the background sync engine finishing
+    window.addEventListener('refreshComplaints', () => {
+        console.log("🔄 refreshComplaints event received! Reloading table...");
+        loadComplaints(); // Quietly rebuild the table without reloading the page!
+    });
 });

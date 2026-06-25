@@ -4,6 +4,16 @@ import { showToast } from './utils/toast.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
+    // ════ PWA OFFLINE AUTO-LOGIN ════
+    const token = localStorage.getItem('token');
+    const userType = localStorage.getItem('user_type');
+    
+    // If they already have a session, skip the login screen entirely!
+    if (token && userType) {
+        window.location.href = userType === 'staff' ? 'staff.html' : 'citizen.html';
+        return; 
+    }
+
     // ═══════════════════════════════════════════════════════
     // LOGIN LOGIC
     // ═══════════════════════════════════════════════════════
@@ -11,6 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault(); 
+            
+            // Protect against trying to authenticate without internet
+            if (!navigator.onLine) {
+                showToast('You must be connected to the internet to log in for the first time.', 'error');
+                return;
+            }
             
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
@@ -56,26 +72,26 @@ document.addEventListener('DOMContentLoaded', () => {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            if (!navigator.onLine) {
+                showToast('You must be connected to the internet to register.', 'error');
+                return;
+            }
+            
             const full_name = document.getElementById('reg-name').value;
             const email = document.getElementById('reg-email').value;
             const password = document.getElementById('reg-password').value;
-            
-            // NEW: Grab the phone number
             const phone = document.getElementById('reg-phone').value;
             
             const errorDiv = document.getElementById('register-error');
-
             if (errorDiv) errorDiv.classList.add('hidden');
 
             try {
                 await apiRequest('/auth/register', {
                     method: 'POST',
-                    // NEW: Include phone in the JSON payload
                     body: JSON.stringify({ full_name, email, password, phone })
                 });
 
                 showToast('Account created successfully! You can now log in.', 'success');
-                
                 document.getElementById('register-view').classList.add('hidden');
                 document.getElementById('login-view').classList.remove('hidden');
 

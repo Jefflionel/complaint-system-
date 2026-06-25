@@ -34,6 +34,11 @@ class StaffResponse(BaseModel):
     district_id: int
     model_config = ConfigDict(from_attributes=True)
 
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    password: Optional[str] = None
+
 # ═══════════════════════════════════════════════════════
 # AUTH & PUBLIC DATA SCHEMAS
 # ═══════════════════════════════════════════════════════
@@ -148,3 +153,4 @@ class SuggestionResponse(BaseModel):
     support_count: int = 0  
     
     model_config = ConfigDict(from_attributes=True)
+
