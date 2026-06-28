@@ -3,137 +3,340 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yaoundé Citizen Complaints</title>
+    <title>CitizenHub — Better Yaoundé Starts Here</title>
+    <meta name="description" content="Report local issues, track municipal responses, and suggest community improvements in Yaoundé — all in one place.">
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#16a34a">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Customizing the Tailwind theme to match your White & Green requirement
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brand: {
-                            green: '#16a34a', // Standard green
-                            dark: '#15803d',  // Hover state
-                            light: '#dcfce7'  // Background tints
-                        }
-                    }
+                        brand: { green: '#16a34a', dark: '#15803d', light: '#dcfce7' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
             }
         }
     </script>
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse-ring {
+            0%   { box-shadow: 0 0 0 0 rgba(22,163,74,0.35); }
+            70%  { box-shadow: 0 0 0 12px rgba(22,163,74,0); }
+            100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); }
+        }
+        .float-card  { animation: float 6s ease-in-out infinite; }
+        .fade-in-up  { animation: fadeInUp 0.7s ease both; }
+        .fade-in-up-2{ animation: fadeInUp 0.7s ease 0.15s both; }
+        .fade-in-up-3{ animation: fadeInUp 0.7s ease 0.30s both; }
+        .btn-pulse   { animation: pulse-ring 2.4s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite; }
+        .glass {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+<body class="bg-gradient-to-br from-green-50 via-white to-emerald-50 text-gray-800 font-sans antialiased min-h-screen">
 
-    <div id="home-view" class="min-h-screen flex flex-col items-center justify-center p-6 block">
-        
-        <div class="max-w-2xl text-center space-y-8">
-            <h1 class="text-5xl font-extrabold text-gray-900">
-                Better <span class="text-brand-green">Yaoundé</span> Starts Here
-            </h1>
-            <p class="text-xl text-gray-600">
-                Report local issues, track municipal responses, and suggest community improvements—all in one place.
-            </p>
-            
-            <div class="flex gap-4 justify-center">
-                <button onclick="switchView('login-view')" class="bg-brand-green hover:bg-brand-dark text-white px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
-                    Log In
-                </button>
-                <button onclick="switchView('register-view')" class="bg-white hover:bg-gray-50 text-brand-green border-2 border-brand-green px-8 py-3 rounded-lg font-bold transition-colors">
-                    Sign Up
-                </button>
+    <!-- ══════ TOP NAV ══════ -->
+    <nav id="home-nav" class="glass sticky top-0 z-50 border-b border-green-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="#" class="text-2xl font-extrabold tracking-tight text-gray-900">
+                Citizen<span class="text-brand-green">Hub</span>
+            </a>
+            <!-- Language toggle in nav (landing page) -->
+            <div id="landing-lang-toggle" class="flex items-center gap-2 bg-gray-100 rounded-full p-1">
+                <button id="land-en-btn" onclick="setLandingLang('en')" class="px-4 py-1.5 rounded-full text-sm font-bold transition-all bg-white shadow text-brand-green">EN</button>
+                <button id="land-fr-btn" onclick="setLandingLang('fr')" class="px-4 py-1.5 rounded-full text-sm font-bold transition-all text-gray-500 hover:text-gray-700">FR</button>
             </div>
         </div>
+    </nav>
 
-    </div>
+    <!-- ══════ HOME VIEW ══════ -->
+    <div id="home-view" class="block">
 
-    <div id="login-view" class="min-h-screen flex items-center justify-center p-6 hidden">
-        
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-t-4 border-brand-green">
-            <h2 class="text-3xl font-bold mb-6 text-center">Welcome Back</h2>
+        <!-- Hero Section -->
+        <section class="max-w-7xl mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-32">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+                <!-- Left: Copy -->
+                <div class="space-y-8">
+                    <div class="inline-flex items-center gap-2 bg-brand-light text-brand-dark text-xs font-bold px-4 py-2 rounded-full border border-green-200 shadow-sm fade-in-up">
+                        <span class="w-2 h-2 rounded-full bg-brand-green btn-pulse inline-block"></span>
+                        Yaoundé · Cameroon
+                    </div>
+
+                    <h1 data-i18n="landing.tagline" class="text-5xl md:text-6xl font-black text-gray-900 leading-tight fade-in-up-2">
+                        Better <span class="text-brand-green">Yaoundé</span> Starts Here
+                    </h1>
+
+                    <p data-i18n="landing.subtitle" class="text-lg text-gray-600 max-w-lg leading-relaxed fade-in-up-3">
+                        Report local issues, track municipal responses, and suggest community improvements — all in one place.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row gap-4 fade-in-up-3">
+                        <button id="hero-login-btn" onclick="switchView('login-view')"
+                            class="group relative bg-brand-green hover:bg-brand-dark text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-green-200 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                            <span data-i18n="landing.loginBtn">Log In</span>
+                        </button>
+                        <button id="hero-signup-btn" onclick="switchView('register-view')"
+                            class="group bg-white hover:bg-gray-50 text-brand-green border-2 border-brand-green px-8 py-4 rounded-xl font-bold text-lg shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                            <span data-i18n="landing.signupBtn">Sign Up</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Dashboard Preview Card -->
+                <div class="hidden lg:flex justify-center items-center float-card">
+                    <div class="relative w-full max-w-sm">
+                        <!-- Decorative blobs -->
+                        <div class="absolute -top-8 -right-8 w-40 h-40 bg-green-200 rounded-full opacity-40 blur-2xl"></div>
+                        <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-emerald-300 rounded-full opacity-30 blur-2xl"></div>
+
+                        <!-- Mock dashboard card -->
+                        <div class="relative bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                            <!-- Card header bar -->
+                            <div class="bg-brand-green px-5 py-4 flex items-center gap-3">
+                                <div class="w-3 h-3 rounded-full bg-white opacity-50"></div>
+                                <div class="w-3 h-3 rounded-full bg-white opacity-50"></div>
+                                <div class="w-3 h-3 rounded-full bg-white opacity-50"></div>
+                                <span class="ml-2 text-white text-sm font-bold opacity-80">CitizenHub Dashboard</span>
+                            </div>
+                            <!-- Fake ticket rows -->
+                            <div class="p-5 space-y-3">
+                                <div class="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 border">
+                                    <div>
+                                        <p class="text-xs font-mono text-gray-400">TKT-0041</p>
+                                        <p class="text-sm font-bold text-gray-800">Broken streetlight</p>
+                                    </div>
+                                    <span class="text-xs font-bold px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">Pending</span>
+                                </div>
+                                <div class="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 border">
+                                    <div>
+                                        <p class="text-xs font-mono text-gray-400">TKT-0038</p>
+                                        <p class="text-sm font-bold text-gray-800">Flooded drainage</p>
+                                    </div>
+                                    <span class="text-xs font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200">In Progress</span>
+                                </div>
+                                <div class="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 border">
+                                    <div>
+                                        <p class="text-xs font-mono text-gray-400">TKT-0027</p>
+                                        <p class="text-sm font-bold text-gray-800">Pothole on Avenue</p>
+                                    </div>
+                                    <span class="text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700 border border-green-200">✓ Resolved</span>
+                                </div>
+                            </div>
+                            <!-- Fake action bar -->
+                            <div class="px-5 pb-4">
+                                <div class="w-full bg-brand-green text-white text-center text-sm font-bold rounded-lg py-2 opacity-90">+ New Report</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Feature Cards -->
+        <section class="max-w-7xl mx-auto px-6 pb-24">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-200 group">
+                    <div class="w-10 h-1 bg-brand-green rounded-full mb-6 group-hover:w-14 transition-all duration-300"></div>
+                    <h3 data-i18n="landing.feature1Title" class="text-xl font-bold text-gray-900 mb-3">Capture &amp; Report</h3>
+                    <p data-i18n="landing.feature1Desc" class="text-gray-500 text-sm leading-relaxed">
+                        Snap a photo, pin the location and submit your complaint in under 60 seconds.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-200 group">
+                    <div class="w-10 h-1 bg-blue-400 rounded-full mb-6 group-hover:w-14 transition-all duration-300"></div>
+                    <h3 data-i18n="landing.feature2Title" class="text-xl font-bold text-gray-900 mb-3">Offline Sync</h3>
+                    <p data-i18n="landing.feature2Desc" class="text-gray-500 text-sm leading-relaxed">
+                        No internet? No problem. Reports are saved locally and synced automatically when you reconnect.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-200 group">
+                    <div class="w-10 h-1 bg-emerald-500 rounded-full mb-6 group-hover:w-14 transition-all duration-300"></div>
+                    <h3 data-i18n="landing.feature3Title" class="text-xl font-bold text-gray-900 mb-3">Track Resolution</h3>
+                    <p data-i18n="landing.feature3Desc" class="text-gray-500 text-sm leading-relaxed">
+                        Follow your ticket from submission to official council response in real time.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+    </div><!-- /home-view -->
+
+    <!-- ══════ LOGIN VIEW ══════ -->
+    <div id="login-view" class="hidden min-h-screen flex items-center justify-center p-6">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-brand-green">
+            <div class="mb-8">
+                <h2 data-i18n="landing.login" class="text-3xl font-black text-gray-900">Welcome Back</h2>
+                <p class="text-gray-500 text-sm mt-1" data-i18n="landing.loginSubtitle">Sign in to access your dashboard.</p>
+            </div>
             
-            <form id="login-form" class="space-y-4">
+            <form id="login-form" class="space-y-5">
                 <div>
-                    <label class="block text-sm font-semibold mb-1">Email</label>
-                    <input type="email" id="login-email" class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-brand-green focus:outline-none" required>
+                    <label data-i18n="landing.loginEmailLabel" class="block text-sm font-semibold mb-1 text-gray-700">Email</label>
+                    <input type="email" id="login-email" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1">Password</label>
-                    <input type="password" id="login-password" class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-brand-green focus:outline-none" required>
+                    <label data-i18n="landing.loginPasswordLabel" class="block text-sm font-semibold mb-1 text-gray-700">Password</label>
+                    <input type="password" id="login-password" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow" required>
                 </div>
-                <div id="login-error" class="hidden text-red-600 text-sm font-semibold text-center bg-red-50 p-2 rounded"></div>
-                <button type="submit" class="w-full bg-brand-green text-white py-3 rounded-md font-bold hover:bg-brand-dark transition-colors mt-6">
+                <div id="login-error" class="hidden text-red-600 text-sm font-semibold text-center bg-red-50 p-3 rounded-xl border border-red-200"></div>
+                <button type="submit" data-i18n="landing.loginSubmitBtn" class="w-full bg-brand-green text-white py-3.5 rounded-xl font-bold text-base hover:bg-brand-dark transition-all duration-200 shadow-lg shadow-green-200 hover:shadow-xl hover:-translate-y-0.5 mt-4">
                     Access Dashboard
                 </button>
             </form>
 
             <div class="mt-6 text-center text-sm">
-                <button onclick="switchView('home-view')" class="text-gray-500 hover:text-gray-800 underline">← Back to Home</button>
+                <button onclick="switchView('home-view')" data-i18n="landing.backHome" class="text-gray-500 hover:text-brand-green font-semibold transition-colors">← Back to Home</button>
             </div>
         </div>
-
     </div>
 
-    <div id="register-view" class="min-h-screen flex items-center justify-center p-6 hidden">
-        
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-t-4 border-brand-green">
-            <h2 class="text-3xl font-bold mb-6 text-center">Create Account</h2>
+    <!-- ══════ REGISTER VIEW ══════ -->
+    <div id="register-view" class="hidden min-h-screen flex items-center justify-center p-6 py-12">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border-t-4 border-brand-green">
+            <div class="mb-8">
+                <h2 data-i18n="landing.register" class="text-3xl font-black text-gray-900">Create Account</h2>
+                <p class="text-gray-500 text-sm mt-1" data-i18n="landing.registerSubtitle">Join thousands of Yaoundé citizens.</p>
+            </div>
             
-            <form id="register-form" class="space-y-4">
+            <form id="register-form" class="space-y-5">
                 <div>
-                    <label class="block text-sm font-semibold mb-1">Full Name</label>
-                    <input type="text" id="reg-name" class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-brand-green focus:outline-none" required>
+                    <label data-i18n="landing.regNameLabel" class="block text-sm font-semibold mb-1 text-gray-700">Full Name</label>
+                    <input type="text" id="reg-name" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1">Email</label>
-                    <input type="email" id="reg-email" class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-brand-green focus:outline-none" required>
+                    <label data-i18n="landing.regEmailLabel" class="block text-sm font-semibold mb-1 text-gray-700">Email</label>
+                    <input type="email" id="reg-email" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1">Phone Number</label>
-                    <input type="tel" id="reg-phone" 
-                            pattern="^6[0-9]{8,}$" 
-                            title="Phone number must start with 6 and contain at least 9 digits" 
-                            placeholder="e.g., 670123456" 
-                        class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-brand-green focus:outline-none" required>
+                    <label data-i18n="landing.regPhoneLabel" class="block text-sm font-semibold mb-1 text-gray-700">Phone Number</label>
+                    <input type="tel" id="reg-phone"
+                            pattern="^6[0-9]{8,}$"
+                            title="Phone number must start with 6 and contain at least 9 digits"
+                            data-i18n="landing.regPhonePlaceholder"
+                            placeholder="e.g., 670123456"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-1">Password</label>
-                    <input type="password" id="reg-password" 
-                           class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-brand-green focus:outline-none" 
-                           required 
-                           minlength="8" 
-                           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" 
+                    <label data-i18n="landing.regPasswordLabel" class="block text-sm font-semibold mb-1 text-gray-700">Password</label>
+                    <input type="password" id="reg-password"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-shadow"
+                           required
+                           minlength="8"
+                           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
                            title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters">
                 </div>
-                <div id="register-error" class="hidden text-red-600 text-sm font-semibold text-center bg-red-50 p-2 rounded mb-4"></div>
-                <button type="submit" class="w-full bg-brand-green text-white py-3 rounded-md font-bold hover:bg-brand-dark transition-colors mt-6">
+                <div id="register-error" class="hidden text-red-600 text-sm font-semibold text-center bg-red-50 p-3 rounded-xl border border-red-200"></div>
+                <button type="submit" data-i18n="landing.regSubmitBtn" class="w-full bg-brand-green text-white py-3.5 rounded-xl font-bold text-base hover:bg-brand-dark transition-all duration-200 shadow-lg shadow-green-200 hover:shadow-xl hover:-translate-y-0.5 mt-4">
                     Create Citizen Account
                 </button>
             </form>
 
             <div class="mt-6 text-center text-sm">
-                <button onclick="switchView('home-view')" class="text-gray-500 hover:text-gray-800 underline">← Back to Home</button>
+                <button onclick="switchView('home-view')" data-i18n="landing.backHome" class="text-gray-500 hover:text-brand-green font-semibold transition-colors">← Back to Home</button>
             </div>
         </div>
-
     </div>
 
+    <!-- ══════ SCRIPTS ══════ -->
     <script>
         function switchView(targetViewId) {
-            // 1. Get all the view containers
-            const home = document.getElementById('home-view');
-            const login = document.getElementById('login-view');
-            const register = document.getElementById('register-view');
-
-            // 2. Hide all of them by adding the Tailwind 'hidden' class
-            home.classList.add('hidden');
-            login.classList.add('hidden');
-            register.classList.add('hidden');
-
-            // 3. Un-hide the specific one the user requested
-            document.getElementById(targetViewId).classList.remove('hidden');
+            ['home-view', 'login-view', 'register-view'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            // Show/hide nav only on home
+            const nav = document.getElementById('home-nav');
+            if (targetViewId === 'home-view') {
+                nav.classList.remove('hidden');
+                document.getElementById('home-view').classList.remove('hidden');
+            } else {
+                nav.classList.add('hidden');
+                document.getElementById(targetViewId).classList.remove('hidden');
+            }
         }
+
+        // ═══ LANDING PAGE i18n ENGINE ═══
+        const LANDING_TRANSLATIONS = {
+            en: null, // loaded from JSON
+            fr: null
+        };
+        let landingLang = localStorage.getItem('lang') || 'en';
+
+        async function loadLandingTranslations(lang) {
+            if (!LANDING_TRANSLATIONS[lang]) {
+                try {
+                    const res = await fetch(`./locales/${lang}.json`);
+                    LANDING_TRANSLATIONS[lang] = await res.json();
+                } catch(e) {
+                    console.warn('Landing i18n: could not load', lang);
+                    return;
+                }
+            }
+            applyLandingTranslations(LANDING_TRANSLATIONS[lang]);
+        }
+
+        function applyLandingTranslations(dict) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const keys = key.split('.');
+                let text = dict;
+                for (const k of keys) {
+                    if (!text) return;
+                    text = text[k];
+                }
+                if (typeof text === 'string') {
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        el.placeholder = text;
+                    } else {
+                        el.textContent = text;
+                    }
+                }
+            });
+        }
+
+        function setLandingLang(lang) {
+            landingLang = lang;
+            localStorage.setItem('lang', lang);
+            loadLandingTranslations(lang);
+            // Update pill appearance
+            document.getElementById('land-en-btn').className = lang === 'en'
+                ? 'px-4 py-1.5 rounded-full text-sm font-bold transition-all bg-white shadow text-brand-green'
+                : 'px-4 py-1.5 rounded-full text-sm font-bold transition-all text-gray-500 hover:text-gray-700';
+            document.getElementById('land-fr-btn').className = lang === 'fr'
+                ? 'px-4 py-1.5 rounded-full text-sm font-bold transition-all bg-white shadow text-brand-green'
+                : 'px-4 py-1.5 rounded-full text-sm font-bold transition-all text-gray-500 hover:text-gray-700';
+        }
+
+        // Boot
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLandingTranslations(landingLang);
+            if (landingLang === 'fr') {
+                document.getElementById('land-en-btn').className = 'px-4 py-1.5 rounded-full text-sm font-bold transition-all text-gray-500 hover:text-gray-700';
+                document.getElementById('land-fr-btn').className = 'px-4 py-1.5 rounded-full text-sm font-bold transition-all bg-white shadow text-brand-green';
+            }
+        });
     </script>
     <script type="module" src="./js/auth.js"></script>
     <script>
@@ -145,5 +348,6 @@
             });
         }
     </script>
+
 </body>
 </html>

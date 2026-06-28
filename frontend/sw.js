@@ -1,5 +1,5 @@
 // frontend/sw.js
-const CACHE_NAME = 'yaounde-civic-v4'; // Bumped version to break the stuck cache
+const CACHE_NAME = 'yaounde-civic-v10'; // v10: full i18n pass + mobile sidebar fix
 
 // The core files that make up your application shell
 const ASSETS_TO_CACHE = [
@@ -18,7 +18,10 @@ const ASSETS_TO_CACHE = [
     './js/utils/ui.js',
     './js/utils/maps.js',
     './js/utils/analytics.js',
-    './js/utils/offline.js'
+    './js/utils/offline.js',
+    './js/utils/i18n.js',
+    './locales/en.json',
+    './locales/fr.json'
 ];
 
 self.addEventListener('install', (event) => {

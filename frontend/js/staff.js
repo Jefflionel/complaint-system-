@@ -6,8 +6,17 @@ import { setupStaffMap, showStaffMap } from './utils/maps.js';
 import { loadAnalytics, setupAnalyticsEvents } from './utils/analytics.js';
 import { initStaffForum } from './staff-forum.js'; 
 import { initProfile } from './utils/profile.js';
+import { initI18n, applyTranslations, t } from './utils/i18n.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+const isLocal = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') || window.location.protocol === 'file:';
+const API_HOST = isLocal ? 'http://localhost:8000' : '';
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await initI18n(); // Start the translation engine first
+
+    // Dynamic browser tab title
+    document.title = `${t('staff.masterList')} · MunicipalCommand`;
+
     const token = localStorage.getItem('token');
     const userType = localStorage.getItem('user_type');
     
@@ -16,9 +25,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    document.getElementById('logout-btn').addEventListener('click', () => {
+
+    // Settings: Logout
+    document.getElementById('settings-logout-btn').addEventListener('click', () => {
         localStorage.clear(); 
         window.location.href = 'index.html';
+    });
+
+    // Settings: Delete Account — opens confirmation modal
+    const deleteModal = document.getElementById('delete-modal');
+    document.getElementById('settings-delete-btn').addEventListener('click', () => {
+        deleteModal.classList.remove('hidden');
+    });
+    document.getElementById('cancel-delete-btn').addEventListener('click', () => {
+        deleteModal.classList.add('hidden');
+    });
+    document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+        try {
+            await apiRequest('/auth/staff/me', { method: 'DELETE' });
+            localStorage.clear();
+            window.location.href = 'index.html';
+        } catch (err) {
+            deleteModal.classList.add('hidden');
+            showToast('Failed to delete account: ' + err.message, 'error');
+        }
     });
 
     // Initialize all modules
@@ -29,16 +59,43 @@ document.addEventListener('DOMContentLoaded', () => {
     initStaffForum(); 
     initProfile();
 
+    // Populate the sidebar with the logged-in staff member's name
+    async function loadSidebarUser() {
+        try {
+            const userData = await apiRequest('/auth/staff/me');
+            const name = userData.full_name || userData.identity?.full_name || 'Staff';
+            const nameEl = document.getElementById('sidebar-user-name');
+            const avatarEl = document.getElementById('sidebar-avatar');
+            if (nameEl) nameEl.innerText = name;
+            if (avatarEl) avatarEl.innerText = name.charAt(0).toUpperCase();
+        } catch (e) {
+            // silently fail
+        }
+    }
+    loadSidebarUser();
+
     let currentComplaints = [];
 
     async function loadMasterComplaints() {
         try {
             currentComplaints = await apiRequest('/staff/complaints/');
             const tbody = document.getElementById('staff-table-body');
-            tbody.innerHTML = '';
             
             let pendingCount = 0;
             let resolvedCount = 0;
+
+            tbody.innerHTML = '';
+            if (currentComplaints.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <h3 data-i18n="dashboard.emptyTitle" class="text-sm font-medium text-gray-900">No tickets found</h3>
+                            <p data-i18n="dashboard.emptyDesc" class="mt-1 text-sm text-gray-500">No reports submitted yet.</p>
+                        </td>
+                    </tr>`;
+                applyTranslations();
+            }
 
             currentComplaints.forEach(c => {
                 if (c.status === 'Resolved') resolvedCount++;
@@ -50,23 +107,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 let actionHtml = '';
                 if (c.status === 'Rejected' || c.status === 'Resolved') {
-                    actionHtml = `<span class="text-gray-400 text-sm font-semibold flex items-center cursor-not-allowed"><svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>Locked</span>`;
+                    actionHtml = `<span class="text-gray-400 text-sm font-semibold flex items-center cursor-not-allowed"><svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>${t('staff.locked')}</span>`;
                 } else {
-                    actionHtml = `<button class="review-btn bg-brand-green hover:bg-brand-dark text-white px-4 py-1.5 rounded text-sm font-bold shadow transition-all" data-id="${c.id}">Review</button>`;
+                    actionHtml = `<button class="review-btn bg-brand-green hover:bg-brand-dark text-white px-4 py-1.5 rounded text-sm font-bold shadow transition-all" data-id="${c.id}">${t('staff.reviewBtn')}</button>`;
                 }
 
                 let ticketHtml = `<span class="text-gray-600">${c.ticket_id}</span>`;
                 if (c.is_anonymous) {
-                    ticketHtml += `<br><span class="inline-block mt-1 bg-gray-200 text-gray-700 text-[10px] px-2 py-0.5 rounded font-bold shadow-sm">🕵️ Anonymous</span>`;
+                    ticketHtml += `<br><span class="inline-block mt-1 bg-gray-200 text-gray-700 text-[10px] px-2 py-0.5 rounded font-bold shadow-sm">🕵️ ${t('staff.anonymous')}</span>`;
                 }
+
+                const categoryLabel = t('category.' + c.category) || c.category.replace(/_/g, ' ');
+                const statusLabel = t('status.' + c.status) || c.status;
 
                 const tr = document.createElement('tr');
                 tr.className = "border-b hover:bg-gray-50 transition-colors";
                 tr.innerHTML = `
                     <td class="p-4 font-mono text-sm whitespace-nowrap">${ticketHtml}</td>
                     <td class="p-4 font-medium whitespace-nowrap">Yaoundé ${c.district_id}</td>
-                    <td class="p-4 whitespace-nowrap">${c.category.replace(/_/g, ' ')}</td>
-                    <td class="p-4 whitespace-nowrap"><span class="px-3 py-1 rounded-full text-xs font-bold border ${statusColor}">${c.status.toUpperCase()}</span></td>
+                    <td class="p-4 whitespace-nowrap">${categoryLabel}</td>
+                    <td class="p-4 whitespace-nowrap"><span class="px-3 py-1 rounded-full text-xs font-bold border ${statusColor}">${statusLabel.toUpperCase()}</span></td>
                     <td class="p-4 whitespace-nowrap">${actionHtml}</td>
                 `;
                 tbody.appendChild(tr);
@@ -75,6 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('stat-total').innerText = currentComplaints.length;
             document.getElementById('stat-pending').innerText = pendingCount;
             document.getElementById('stat-resolved').innerText = resolvedCount;
+
+            // Re-apply translations to newly injected dynamic content
+            applyTranslations();
 
             document.querySelectorAll('.review-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -85,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Failed to load master list:", error);
-            showToast("Error loading complaints: " + error.message, "error");
+            showToast(t('toast.loadFailed') + error.message, 'error');
         }
     }
 
@@ -97,15 +160,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('r-title').innerText = complaint.title;
         document.getElementById('r-ticket').innerText = complaint.ticket_id;
         document.getElementById('r-district').innerText = `Yaoundé ${complaint.district_id}`;
-        document.getElementById('r-desc').innerText = complaint.description || "No description provided.";
-        document.getElementById('r-location').innerText = complaint.location || "No landmark provided.";
+        document.getElementById('r-desc').innerText = complaint.description || t('staff.noDescription');
+        document.getElementById('r-location').innerText = complaint.location || t('staff.noLandmark');
         
         let reporterHtml = '';
         if (complaint.is_anonymous) {
-            reporterHtml = `<div class="text-gray-500 italic">🕵️ Submitted Anonymously</div>`;
+            reporterHtml = `<div class="text-gray-500 italic">🕵️ ${t('staff.submittedAnon')}</div>`;
         } else {
-            const name = complaint.user?.identity?.full_name || "Unknown Citizen";
-            const phone = complaint.user?.identity?.phone || "No phone provided";
+            const name = complaint.user?.identity?.full_name || t('staff.unknownCitizen');
+            const phone = complaint.user?.identity?.phone || t('staff.noPhone');
             reporterHtml = `<div class="text-gray-800 font-bold">👤 ${name}<br><span class="text-gray-600 font-normal mt-1 block">📞 ${phone}</span></div>`;
         }
         document.getElementById('r-reporter').innerHTML = reporterHtml;
@@ -127,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const photoEl = document.getElementById('r-photo');
         const noPhotoEl = document.getElementById('r-no-photo');
         if (complaint.photo_path) {
-            photoEl.src = `http://localhost:8000/${complaint.photo_path}`;
+            photoEl.src = `${API_HOST}/${complaint.photo_path}`;
             photoEl.classList.remove('hidden');
             noPhotoEl.classList.add('hidden');
         } else {
@@ -195,12 +258,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 await apiRequest(`/staff/complaints/${complaintId}/status`, { method: 'PATCH', body: JSON.stringify({ status: newStatus }) });
             }
 
-            showToast('Ticket updated successfully!', 'success');
+            showToast(t('toast.updateSuccess'), 'success');
             window.switchView('dashboard-view');
             loadMasterComplaints(); 
 
         } catch (error) {
-            showToast('Failed to update ticket: ' + error.message, 'error');
+            showToast(t('toast.updateFailed') + error.message, 'error');
         }
     });
 

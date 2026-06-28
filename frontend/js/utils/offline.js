@@ -1,6 +1,7 @@
 // frontend/js/utils/offline.js
 import { apiRequest } from '../api.js';
 import { showToast } from './toast.js';
+import { t } from './i18n.js';
 
 function logSync(msg, data = null) {
     const timestamp = new Date().toISOString().split('T')[1];
@@ -127,7 +128,7 @@ export async function syncOfflineComplaints() {
 
         // ════ 2. THE REFRESH SIGNAL ════
         if (syncedCount > 0) {
-            showToast(`✅ Successfully synced ${syncedCount} offline complaints!`, 'success');
+            showToast(t('toast.synced'), 'success');
             logSync("Dispatching 'refreshComplaints' event.");
             window.dispatchEvent(new Event('refreshComplaints'));
         }

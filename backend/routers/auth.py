@@ -164,3 +164,16 @@ def update_staff_profile(
 
     db.commit()
     return {"message": "Staff profile updated successfully"}
+
+@router.delete("/me", status_code=204)
+def delete_my_account(
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(security.get_current_user_id)
+):
+    """Permanently deletes the citizen's account and all associated data."""
+    user = db.query(models.User).filter(models.User.id == current_user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
+    # Returns 204 No Content on success

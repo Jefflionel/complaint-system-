@@ -1,6 +1,7 @@
 // frontend/js/utils/profile.js
 import { apiRequest } from '../api.js';
 import { showToast } from './toast.js';
+import { t } from './i18n.js';
 
 export async function initProfile() {
     const profileDisplay = document.getElementById('profile-display');
@@ -58,7 +59,7 @@ export async function initProfile() {
             if (document.getElementById('p-phone')) document.getElementById('p-phone').value = phone === 'Not provided' ? '' : phone;
 
         } catch(err) {
-            console.error("❌ API Fetch Failed:", err);
+            // fetch error — no action needed, user sees nothing
         }
     };
 
@@ -82,11 +83,11 @@ export async function initProfile() {
 
         try {
             await apiRequest(endpoint, { method: 'PATCH', body: JSON.stringify(payload) });
-            showToast("Profile updated successfully!", "success");
+            showToast(t('toast.profileUpdated'), 'success');
             await loadProfileData();
             hideEditForm();
         } catch (error) {
-            showToast("Failed to update profile: " + error.message, "error");
+            showToast(t('toast.profileFailed') + error.message, 'error');
         }
     });
 }

@@ -1,16 +1,22 @@
 {
-  "name": "Yaoundé Civic Management",
+  "name": "Yaoundé Citizen Hub",
   "short_name": "CitizenHub",
-  "description": "Report local issues and participate in community forums.",
-  "start_url": "./index.html",
+  "description": "Report local infrastructure issues and track municipal responses in Yaoundé.",
+  "start_url": "/frontend/index.html",
   "display": "standalone",
-  "background_color": "#f9fafb",
+  "background_color": "#ffffff",
   "theme_color": "#16a34a",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/1006/1006900.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/frontend/assets/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/frontend/assets/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
   ]
 }

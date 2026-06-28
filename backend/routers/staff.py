@@ -68,7 +68,7 @@ async def update_complaint_status_with_photo(
     status: Annotated[schemas.ComplaintStatus | None, Form()] = None,
     assigned_department: Annotated[schemas.DepartmentKey | None, Form()] = None,
     resolution_notes: Annotated[str | None, Form()] = None,
-    resolution_photo: UploadFile = File(None) 
+    resolution_photo: Annotated[UploadFile | None, File()] = None
 ):
     complaint = db.query(models.Complaint).filter(models.Complaint.id == complaint_id).first()
     if not complaint:

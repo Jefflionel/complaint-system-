@@ -30,32 +30,42 @@
                 <h1 class="text-xl font-bold tracking-wider">Municipal<span class="text-brand-green">Command</span></h1>
             </div>
 
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                <button onclick="window.switchView('dashboard-view', this)" data-view="dashboard-view" class="sidebar-btn w-full flex items-center px-4 py-3 bg-brand-green text-white rounded-lg font-semibold transition-colors">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+            <nav class="flex-1 px-2 py-6 space-y-1 overflow-y-auto">
+                <button onclick="window.switchView('dashboard-view', this)" data-view="dashboard-view" data-i18n="staff.masterList" class="sidebar-btn w-full flex items-center py-3 px-4 rounded-r-lg bg-brand-green text-white transition-all border-l-4 border-green-400 font-semibold">
+                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                     Master List
                 </button>
-                <button onclick="window.switchView('analytics-view', this)" data-view="analytics-view" class="sidebar-btn w-full flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg font-semibold transition-colors">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                <button onclick="window.switchView('analytics-view', this)" data-view="analytics-view" data-i18n="staff.analytics" class="sidebar-btn w-full flex items-center py-3 px-4 rounded-r-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all border-l-4 border-transparent">
+                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     Analytics
                 </button>
-                <button onclick="window.switchView('suggestions-view', this)" data-view="suggestions-view" class="sidebar-btn w-full flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg font-semibold transition-colors">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                <button onclick="window.switchView('suggestions-view', this)" data-view="suggestions-view" data-i18n="staff.publicForum" class="sidebar-btn w-full flex items-center py-3 px-4 rounded-r-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all border-l-4 border-transparent">
+                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
                     Public Forum
                 </button>
-                <button onclick="window.switchView('profile-view', this)" data-view="profile-view" class="sidebar-btn w-full flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-lg font-semibold transition-colors">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <button onclick="window.switchView('settings-view', this)" data-view="settings-view" data-i18n="sidebar.settings" class="sidebar-btn w-full flex items-center py-3 px-4 rounded-r-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all border-l-4 border-transparent">
+                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Settings
+                </button>
+                <button onclick="window.switchView('profile-view', this)" data-view="profile-view" data-i18n="sidebar.profile" class="sidebar-btn w-full flex items-center py-3 px-4 rounded-r-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all border-l-4 border-transparent">
+                    <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                     My Profile
                 </button>
             </nav>
 
-            <div class="p-4 border-t border-gray-800">
-                <button id="logout-btn" class="w-full flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-bold transition-colors">Logout</button>
+            <div class="p-4 border-t border-gray-700">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-brand-green flex items-center justify-center text-white font-bold text-lg mr-3" id="sidebar-avatar">?</div>
+                    <div class="overflow-hidden">
+                        <p id="sidebar-user-name" class="text-sm font-bold text-white truncate">Loading...</p>
+                        <p data-i18n="sidebar.staffRole" class="text-xs text-gray-400">Staff</p>
+                    </div>
+                </div>
             </div>
         </aside>
 
         <div class="flex-1 flex flex-col bg-gray-100 overflow-hidden relative">
-            <header class="h-16 bg-white shadow-sm flex items-center justify-between px-4 md:px-8 z-10">
+            <header class="h-16 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm flex items-center justify-between px-4 md:px-8 z-40 sticky top-0">
                 <div class="flex items-center gap-3">
                     <button id="mobile-menu-btn" class="md:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -70,15 +80,15 @@
                 <div id="dashboard-view" class="max-w-7xl mx-auto hidden view-section">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <div class="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-blue-500">
-                            <h3 class="text-gray-500 font-semibold text-sm uppercase">Total Complaints</h3>
+                            <h3 data-i18n="staff.statTotal" class="text-gray-500 font-semibold text-sm uppercase">Total Complaints</h3>
                             <p id="stat-total" class="text-3xl font-bold mt-2">0</p>
                         </div>
                         <div class="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-yellow-500">
-                            <h3 class="text-gray-500 font-semibold text-sm uppercase">Pending Review</h3>
+                            <h3 data-i18n="staff.statPending" class="text-gray-500 font-semibold text-sm uppercase">Pending Review</h3>
                             <p id="stat-pending" class="text-3xl font-bold mt-2 text-yellow-600">0</p>
                         </div>
                         <div class="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-brand-green">
-                            <h3 class="text-gray-500 font-semibold text-sm uppercase">Resolved</h3>
+                            <h3 data-i18n="staff.statResolved" class="text-gray-500 font-semibold text-sm uppercase">Resolved</h3>
                             <p id="stat-resolved" class="text-3xl font-bold mt-2 text-brand-green">0</p>
                         </div>
                     </div>
@@ -87,11 +97,11 @@
                         <table class="w-full text-left border-collapse min-w-[800px]">
                             <thead>
                                 <tr class="bg-gray-50 text-gray-600 uppercase text-xs font-bold border-b">
-                                    <th class="p-4">Ticket ID</th>
-                                    <th class="p-4">District</th>
-                                    <th class="p-4">Category</th>
-                                    <th class="p-4">Status</th>
-                                    <th class="p-4">Action</th>
+                                    <th data-i18n="dashboard.tableId" class="p-4">Ticket ID</th>
+                                    <th data-i18n="staff.tableDistrict" class="p-4">District</th>
+                                    <th data-i18n="dashboard.tableCategory" class="p-4">Category</th>
+                                    <th data-i18n="dashboard.tableStatus" class="p-4">Status</th>
+                                    <th data-i18n="dashboard.tableAction" class="p-4">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="staff-table-body"></tbody>
@@ -100,15 +110,15 @@
                 </div>
 
                 <div id="review-view" class="max-w-4xl mx-auto hidden view-section">
-                    <button onclick="window.switchView('dashboard-view')" class="text-gray-500 hover:text-gray-800 font-semibold mb-6 flex items-center">
-                        ← Back to Master List
+                    <button onclick="window.switchView('dashboard-view')" class="text-gray-500 hover:text-gray-800 font-semibold mb-6 flex items-center transition-colors">
+                        <span data-i18n="staff.backToList">← Back to Master List</span>
                     </button>
 
                     <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-t-4 border-t-brand-green">
                         <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
                             <div>
                                 <h2 id="r-title" class="text-2xl font-bold">Complaint Title</h2>
-                                <p class="text-gray-500 text-sm mt-1">Ticket: <span id="r-ticket">#123</span> | District: <span id="r-district">Yaoundé I</span></p>
+                                <p class="text-gray-500 text-sm mt-1"><span data-i18n="details.ticketLabel">Ticket:</span> <span id="r-ticket">#123</span> | <span data-i18n="details.districtLabel">District:</span> <span id="r-district">Yaoundé I</span></p>
                             </div>
                             <div class="text-left md:text-right w-full md:w-auto">
                                 <span id="r-badge" class="px-3 py-1 rounded-full text-xs font-bold border bg-yellow-100 text-yellow-800 mb-3 inline-block shadow-sm">PENDING</span>
@@ -118,32 +128,32 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 border-t pt-6">
                             <div class="bg-gray-50 p-4 rounded border">
-                                <h3 class="font-semibold text-gray-700 mb-1">Description</h3>
+                                <h3 data-i18n="staff.description" class="font-semibold text-gray-700 mb-1">Description</h3>
                                 <p id="r-desc" class="text-gray-800 text-sm mb-4">...</p>
                                 
-                                <h3 class="font-semibold text-gray-700 mb-1">Location / Landmark</h3>
+                                <h3 data-i18n="staff.locationLandmark" class="font-semibold text-gray-700 mb-1">Location / Landmark</h3>
                                 <p id="r-location" class="text-gray-800 text-sm mb-6">...</p>
 
-                                <h3 class="font-semibold text-gray-700 mb-2">GPS Evidence</h3>
+                                <h3 data-i18n="staff.gpsEvidence" class="font-semibold text-gray-700 mb-2">GPS Evidence</h3>
                                 <button type="button" id="s-view-map-btn" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold shadow hover:bg-blue-700 transition hidden flex items-center">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> View Full Map
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> <span data-i18n="staff.viewFullMap">View Full Map</span>
                                 </button>
                                 <div id="s-no-gps-msg" class="text-gray-500 text-sm font-semibold flex items-center bg-gray-200 px-4 py-2 rounded inline-block">
-                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg> No GPS localisation
+                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg> <span data-i18n="staff.noGps">No GPS localisation</span>
                                 </div>
                             </div>
                             
                             <div class="bg-gray-50 p-4 rounded border flex flex-col items-center justify-center">
-                                <h3 class="font-semibold text-gray-700 mb-2 w-full text-left">Evidence Photo</h3>
+                                <h3 data-i18n="staff.evidencePhoto" class="font-semibold text-gray-700 mb-2 w-full text-left">Evidence Photo</h3>
                                 <img id="r-photo" src="" class="max-h-48 rounded shadow hidden object-contain cursor-pointer hover:opacity-80 transition-opacity">
-                                <p id="r-no-photo" class="text-gray-500 italic text-sm">No photo provided</p>
+                                <p data-i18n="staff.noPhoto" id="r-no-photo" class="text-gray-500 italic text-sm">No photo provided</p>
                             </div>
                         </div>
 
                         <form id="update-status-form" class="space-y-4 border-t pt-6 bg-gray-50 p-4 md:p-6 rounded-lg border">
                             <input type="hidden" id="r-id">
                             <div>
-                                <label class="block font-semibold mb-1 text-gray-800">Update Status</label>
+                                <label data-i18n="staff.updateStatus" class="block font-semibold mb-1 text-gray-800">Update Status</label>
                                 <select id="r-status" class="w-full px-4 py-2 border rounded shadow-sm focus:ring-2 focus:ring-brand-green outline-none">
                                     <option value="Pending">Pending</option>
                                     <option value="In Progress">In Progress</option>
@@ -154,23 +164,23 @@
 
                             <div id="resolution-fields" class="hidden space-y-4 border-t border-gray-200 pt-4 mt-4">
                                 <div>
-                                    <label class="block font-semibold mb-1 text-brand-dark">Resolution Note (Mandatory) <span class="text-red-500">*</span></label>
-                                    <textarea id="r-res-note" rows="3" class="w-full px-4 py-2 border border-green-300 rounded focus:ring-2 focus:ring-brand-green outline-none" placeholder="Explain what was done to fix this issue..."></textarea>
+                                    <label class="block font-semibold mb-1 text-brand-dark"><span data-i18n="staff.resolutionNote">Resolution Note (Mandatory)</span> <span class="text-red-500">*</span></label>
+                                    <textarea id="r-res-note" rows="3" data-i18n="staff.resolutionNotePlaceholder" class="w-full px-4 py-2 border border-green-300 rounded focus:ring-2 focus:ring-brand-green outline-none" placeholder="Explain what was done to fix this issue..."></textarea>
                                 </div>
                                 <div>
-                                    <label class="block font-semibold mb-1 text-gray-700">Resolution Evidence (Optional Photo)</label>
+                                    <label data-i18n="staff.resolutionEvidence" class="block font-semibold mb-1 text-gray-700">Resolution Evidence (Optional Photo)</label>
                                     <input type="file" id="r-res-photo" accept="image/*" class="w-full px-4 py-1 border rounded bg-white">
                                 </div>
                             </div>
                             
                             <div id="action-block" class="mt-4">
-                                <button type="submit" class="w-full bg-gray-900 text-white py-3 rounded-lg font-bold shadow hover:bg-black transition-colors">
+                                <button type="submit" data-i18n="staff.saveChanges" class="w-full bg-gray-900 text-white py-3 rounded-lg font-bold shadow hover:bg-black transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
                                     Save Changes
                                 </button>
                             </div>
                             <div id="locked-block" class="mt-4 hidden text-center bg-gray-200 text-gray-600 font-bold py-3 rounded-lg flex items-center justify-center">
                                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
-                                Ticket is Closed
+                                <span data-i18n="staff.ticketClosed">Ticket is Closed</span>
                             </div>
                         </form>
                     </div>
@@ -178,23 +188,23 @@
 
                 <div id="analytics-view" class="max-w-7xl mx-auto hidden view-section">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800">District Analytics Overview</h2>
+                        <h2 data-i18n="staff.analyticsTitle" class="text-2xl font-bold text-gray-800">District Analytics Overview</h2>
                         <button id="refresh-charts-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded shadow transition-colors font-semibold flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                            Refresh Data
+                            <span data-i18n="staff.refreshData">Refresh Data</span>
                         </button>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                            <h3 class="text-lg font-bold text-gray-700 mb-4 text-center border-b pb-2">Complaints by Status</h3>
+                            <h3 data-i18n="staff.chartByStatus" class="text-lg font-bold text-gray-700 mb-4 text-center border-b pb-2">Complaints by Status</h3>
                             <div class="relative h-72 w-full flex justify-center">
                                 <canvas id="statusChart"></canvas>
                             </div>
                         </div>
                         
                         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                            <h3 class="text-lg font-bold text-gray-700 mb-4 text-center border-b pb-2">Complaints by Category</h3>
+                            <h3 data-i18n="staff.chartByCategory" class="text-lg font-bold text-gray-700 mb-4 text-center border-b pb-2">Complaints by Category</h3>
                             <div class="relative h-72 w-full">
                                 <canvas id="categoryChart"></canvas>
                             </div>
@@ -205,11 +215,11 @@
                 <div id="suggestions-view" class="max-w-6xl mx-auto hidden view-section">
                     <div class="flex justify-between items-center mb-6">
                         <div>
-                            <h2 class="text-2xl font-bold text-gray-800">Public Forum Moderation</h2>
-                            <p class="text-gray-500 text-sm">Community ideas prioritized by citizen votes.</p>
+                            <h2 data-i18n="staff.forumTitle" class="text-2xl font-bold text-gray-800">Public Forum Moderation</h2>
+                            <p data-i18n="staff.forumDesc" class="text-gray-500 text-sm">Community ideas prioritized by citizen votes.</p>
                         </div>
                         <button id="refresh-forum-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded shadow transition-colors font-semibold flex items-center">
-                            Refresh Data
+                            <span data-i18n="staff.refreshData">Refresh Data</span>
                         </button>
                     </div>
 
@@ -217,10 +227,10 @@
                         <table class="w-full text-left border-collapse min-w-[800px]">
                             <thead>
                                 <tr class="bg-gray-50 text-gray-600 uppercase text-xs font-bold border-b">
-                                    <th class="p-4 w-16 text-center">Votes</th>
-                                    <th class="p-4">Idea Title & Description</th>
-                                    <th class="p-4 w-32">Category</th>
-                                    <th class="p-4 w-32">Date</th>
+                                    <th data-i18n="staff.forumVotes" class="p-4 w-16 text-center">Votes</th>
+                                    <th data-i18n="staff.forumIdea" class="p-4">Idea Title & Description</th>
+                                    <th data-i18n="staff.forumCategory" class="p-4 w-32">Category</th>
+                                    <th data-i18n="staff.forumDate" class="p-4 w-32">Date</th>
                                 </tr>
                             </thead>
                             <tbody id="forum-table-body"></tbody>
@@ -269,7 +279,7 @@
                                     <input type="text" id="p-name" class="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-brand-green outline-none bg-gray-50">
                                 </div>
                                 <div>
-                                    <label class="block font-semibold mb-1 text-sm text-gray-700">Email Address (Cannot change)</label>
+                                    <label class="block font-semibold mb-1 text-sm text-gray-700">Email (Read-only)</label>
                                     <input type="email" id="p-email" readonly class="w-full px-4 py-2 border rounded bg-gray-100 text-gray-500 cursor-not-allowed">
                                 </div>
                             </div>
@@ -281,7 +291,7 @@
                             <div class="border-t pt-6 mt-6 border-gray-100">
                                 <h3 class="font-bold text-gray-800 mb-4">Update Security</h3>
                                 <div>
-                                    <label class="block font-semibold mb-1 text-sm text-gray-700">New Password (leave blank to keep current)</label>
+                                    <label class="block font-semibold mb-1 text-sm text-gray-700">New Password (Optional)</label>
                                     <input type="password" id="p-password" placeholder="••••••••" class="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-brand-green outline-none">
                                 </div>
                             </div>
@@ -295,6 +305,37 @@
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+                <!-- VIEW: SETTINGS -->
+                <div id="settings-view" class="max-w-2xl mx-auto view-section hidden">
+                    <h2 data-i18n="settings.title" class="text-2xl font-bold text-gray-800 mb-6">Settings</h2>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 space-y-6">
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-4">
+                            <div>
+                                <h3 data-i18n="settings.language" class="font-bold text-gray-800">Language</h3>
+                                <p data-i18n="settings.languageDesc" class="text-sm text-gray-500">Choose your preferred language.</p>
+                            </div>
+                            <button id="settings-lang-btn" class="hidden"></button>
+                            <div class="flex space-x-2 border border-gray-200 rounded-lg p-1 bg-gray-50">
+                                <button id="lang-en-btn" class="px-4 py-1.5 rounded text-sm font-bold transition-colors bg-white shadow-sm text-green-700">English</button>
+                                <button id="lang-fr-btn" class="px-4 py-1.5 rounded text-sm font-bold transition-colors text-gray-500 hover:text-gray-700">Français</button>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-4">
+                            <div>
+                                <h3 data-i18n="settings.logout" class="font-bold text-gray-800">Sign Out</h3>
+                                <p data-i18n="settings.logoutDesc" class="text-sm text-gray-500">Log out of this device.</p>
+                            </div>
+                            <button id="settings-logout-btn" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded shadow-sm transition-colors" data-i18n="sidebar.logout">Logout</button>
+                        </div>
+                        <div class="flex justify-between items-center pt-2">
+                            <div>
+                                <h3 data-i18n="settings.delete" class="font-bold text-red-600">Delete Account</h3>
+                                <p data-i18n="settings.deleteDesc" class="text-sm text-gray-500">Permanently delete your data.</p>
+                            </div>
+                            <button id="settings-delete-btn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded shadow-sm transition-colors" data-i18n="settings.deleteBtn">Delete</button>
+                        </div>
                     </div>
                 </div>
 
@@ -333,6 +374,16 @@
             <div class="bg-gray-100 p-4 border-t flex justify-between items-center text-sm text-gray-600 font-semibold">
                 <span>District: Yaoundé <span id="modal-s-dist" class="font-bold"></span></span>
                 <span id="modal-s-date"></span>
+            </div>
+        </div>
+    </div>
+    <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <h3 data-i18n="settings.modalTitle" class="text-xl font-bold text-gray-900 mb-2">Delete Account?</h3>
+            <p data-i18n="settings.modalWarning" class="text-gray-600 mb-6">This action is permanent and cannot be undone. All your data will be wiped.</p>
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-delete-btn" data-i18n="profile.cancelBtn" class="px-4 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-lg">Cancel</button>
+                <button id="confirm-delete-btn" data-i18n="settings.deleteBtn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow">Delete</button>
             </div>
         </div>
     </div>

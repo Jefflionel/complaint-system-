@@ -23,38 +23,35 @@ async def submit_complaint(
     current_user_id: Annotated[int, Depends(security.get_current_user_id)],
     title: Annotated[str, Form(...)],
     description: Annotated[str, Form(...)],
-    location: Annotated[str, Form(...)], # <-- NEW LOCATION FIELD
+    location: Annotated[str, Form(...)], 
     district_id: Annotated[int, Form(...)],
     category_name: Annotated[schemas.ComplaintCategoryKey, Form(...)],
+    photo: Annotated[UploadFile, File(...)],  # <-- Moved up above the default arguments!
     is_anonymous: Annotated[bool, Form()] = False,
     latitude: Annotated[float | None, Form()] = None,
     longitude: Annotated[float | None, Form()] = None,
-    photo: Annotated[UploadFile, File(...)] = ... 
 ):
     ticket_id = generate_ticket_id(db)
-    
-    # FIX: We NO LONGER set user_id to None here. 
-    # We always save it to keep the citizen connected to their ticket!
-    
+
     file_extension = photo.filename.split(".")[-1]
     unique_filename = f"{ticket_id}_{uuid.uuid4().hex[:8]}.{file_extension}"
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
-
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(photo.file, buffer)
+    photo_path = file_path
 
     new_complaint = models.Complaint(
         ticket_id=ticket_id,
-        user_id=current_user_id, # FIX: Always the logged-in user!
+        user_id=current_user_id,
         title=title,
         description=description,
-        location=location,       # NEW: Save the location text
+        location=location,
         category=category_name,
         district_id=district_id,
-        is_anonymous=is_anonymous, # This flag is saved to hide names later
+        is_anonymous=is_anonymous,
         latitude=latitude,
         longitude=longitude,
-        photo_path=file_path,  
+        photo_path=photo_path,
         status=schemas.ComplaintStatus.PENDING 
     )
     db.add(new_complaint)

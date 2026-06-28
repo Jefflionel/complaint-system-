@@ -7,15 +7,29 @@ export function setupUI() {
 
 function setupMobileMenu() {
     const btn = document.getElementById('mobile-menu-btn');
-    const sidebar = document.getElementById('sidebar');
+    const sidebar = document.getElementById('app-sidebar');
+    const overlay = document.getElementById('mobile-sidebar-overlay');
     if (btn && sidebar) {
         btn.addEventListener('click', () => {
             sidebar.classList.toggle('-translate-x-full');
+            if (overlay) overlay.classList.toggle('hidden');
         });
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            });
+        }
     }
 }
 
 function setupViewSwapper() {
+    // ── Class sets ──────────────────────────────────────────────────────
+    const CITIZEN_INACTIVE = ['text-gray-500', 'hover:text-green-700', 'hover:bg-green-50', 'border-transparent'];
+    const CITIZEN_ACTIVE   = ['text-green-700', 'bg-green-50', 'border-green-600', 'font-semibold'];
+    const STAFF_INACTIVE   = ['text-gray-400', 'hover:bg-gray-800', 'hover:text-white', 'border-transparent'];
+    const STAFF_ACTIVE     = ['bg-brand-green', 'text-white', 'border-green-400'];
+
     window.switchView = function(targetViewId, clickedBtn = null, pushToHistory = true) {
         
         // Force close all popups/overlays on view change
@@ -37,15 +51,16 @@ function setupViewSwapper() {
         const targetView = document.getElementById(targetViewId);
         if (targetView) targetView.classList.remove('hidden');
 
-        // Update Header Title
+        // Update Header Title (keys map to page-title element)
         const titles = {
-            'dashboard-view': 'My Reports',
-            'submit-view': 'Report an Issue',
-            'details-view': 'Ticket Details',
-            'review-view': 'Complaint Review',
-            'analytics-view': 'District Analytics',
-            'suggestions-view': 'Public Forum',
-            'profile-view': 'My Profile' // <--- ADDED HERE
+            'dashboard-view':  'My Reports',
+            'submit-view':     'Report an Issue',
+            'details-view':    'Ticket Details',
+            'review-view':     'Complaint Review',
+            'analytics-view':  'District Analytics',
+            'suggestions-view':'Community Forum',
+            'settings-view':   'Settings',
+            'profile-view':    'My Profile'
         };
         const titleEl = document.getElementById('page-title');
         if (titleEl) titleEl.innerText = titles[targetViewId] || 'Command Center';
@@ -56,25 +71,24 @@ function setupViewSwapper() {
         }
 
         if (clickedBtn) {
-            // Apply different active colors depending on if it's Staff or Citizen
             const isStaff = window.location.pathname.includes('staff.html');
-            
+
             document.querySelectorAll('.sidebar-btn').forEach(btn => {
                 if (isStaff) {
-                    btn.classList.remove('bg-brand-green', 'text-white');
-                    btn.classList.add('text-gray-400', 'hover:bg-gray-800', 'hover:text-white');
+                    btn.classList.remove(...STAFF_ACTIVE);
+                    btn.classList.add(...STAFF_INACTIVE);
                 } else {
-                    btn.classList.remove('bg-green-50', 'text-brand-green');
-                    btn.classList.add('text-gray-600', 'hover:bg-gray-100', 'hover:text-gray-900');
+                    btn.classList.remove(...CITIZEN_ACTIVE);
+                    btn.classList.add(...CITIZEN_INACTIVE);
                 }
             });
             
             if (isStaff) {
-                clickedBtn.classList.remove('text-gray-400', 'hover:bg-gray-800', 'hover:text-white');
-                clickedBtn.classList.add('bg-brand-green', 'text-white');
+                clickedBtn.classList.remove(...STAFF_INACTIVE);
+                clickedBtn.classList.add(...STAFF_ACTIVE);
             } else {
-                clickedBtn.classList.remove('text-gray-600', 'hover:bg-gray-100', 'hover:text-gray-900');
-                clickedBtn.classList.add('bg-green-50', 'text-brand-green');
+                clickedBtn.classList.remove(...CITIZEN_INACTIVE);
+                clickedBtn.classList.add(...CITIZEN_ACTIVE);
             }
         }
 

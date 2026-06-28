@@ -5,18 +5,48 @@ import { setupUI } from './utils/ui.js';
 import { initCitizenForum } from './citizen-forum.js'; 
 import { saveComplaintOffline, syncOfflineComplaints } from './utils/offline.js';
 import { initProfile } from './utils/profile.js';
+import { initI18n, applyTranslations, t } from './utils/i18n.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+const isLocal = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') || window.location.protocol === 'file:';
+const API_HOST = isLocal ? 'http://localhost:8000' : '';
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await initI18n(); // Start the translation engine first
+
+    // Dynamic browser tab title
+    document.title = `${t('sidebar.dashboard')} · CitizenHub`;
+
     const token = localStorage.getItem('token');
     if (!token) {
         window.location.href = 'index.html';
         return;
     }
 
-    document.getElementById('logout-btn').addEventListener('click', () => {
+
+    // Settings: Logout
+    document.getElementById('settings-logout-btn').addEventListener('click', () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user_type');
         window.location.href = 'index.html';
+    });
+
+    // Settings: Delete Account — opens confirmation modal
+    const deleteModal = document.getElementById('delete-modal');
+    document.getElementById('settings-delete-btn').addEventListener('click', () => {
+        deleteModal.classList.remove('hidden');
+    });
+    document.getElementById('cancel-delete-btn').addEventListener('click', () => {
+        deleteModal.classList.add('hidden');
+    });
+    document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+        try {
+            await apiRequest('/auth/me', { method: 'DELETE' });
+            localStorage.clear();
+            window.location.href = 'index.html';
+        } catch (err) {
+            deleteModal.classList.add('hidden');
+            showToast('Failed to delete account: ' + err.message, 'error');
+        }
     });
 
     // Initialize UI and Forum
@@ -24,41 +54,65 @@ document.addEventListener('DOMContentLoaded', () => {
     initCitizenForum(); 
     initProfile();
 
+    // Populate the sidebar with the logged-in user's name
+    async function loadSidebarUser() {
+        try {
+            const userData = await apiRequest('/auth/me');
+            const name = userData.identity?.full_name || 'User';
+            const nameEl = document.getElementById('sidebar-user-name');
+            const avatarEl = document.getElementById('sidebar-avatar');
+            if (nameEl) nameEl.innerText = name;
+            if (avatarEl) avatarEl.innerText = name.charAt(0).toUpperCase();
+        } catch (e) {
+            // silently fail — sidebar will show 'Loading...'
+        }
+    }
+    loadSidebarUser();
+
     let currentComplaints = [];
 
     async function loadComplaints() {
         try {
             currentComplaints = await apiRequest('/citizen/complaints/me');
             const tbody = document.getElementById('complaints-table-body');
-            const emptyState = document.getElementById('empty-state');
             
-            tbody.innerHTML = ''; 
-            
+            tbody.innerHTML = '';
             if (currentComplaints.length === 0) {
-                emptyState.classList.remove('hidden');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <h3 data-i18n="dashboard.emptyTitle" class="text-sm font-medium text-gray-900">No tickets found</h3>
+                            <p data-i18n="dashboard.emptyDesc" class="mt-1 text-sm text-gray-500">You haven't submitted any reports yet.</p>
+                        </td>
+                    </tr>`;
+                applyTranslations();
                 return;
             }
-            
-            emptyState.classList.add('hidden');
             
             currentComplaints.forEach(c => {
                 let statusColor = c.status === 'Resolved' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200';
                 if (c.status === 'In Progress') statusColor = 'bg-blue-100 text-blue-800 border-blue-200';
                 if (c.status === 'Rejected') statusColor = 'bg-red-100 text-red-800 border-red-200';
                 
-                const actionHtml = `<button class="view-details-btn bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-1.5 rounded text-sm font-bold shadow-sm transition-all" data-id="${c.id}">View Details</button>`;
+                const categoryLabel = t('category.' + c.category) || c.category.replace(/_/g, ' ');
+                const statusLabel = t('status.' + c.status) || c.status;
+                const actionHtml = `<button class="view-details-btn bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-1.5 rounded text-sm font-bold shadow-sm transition-all" data-i18n="dashboard.viewDetails" data-id="${c.id}">View Details</button>`;
 
                 const tr = document.createElement('tr');
                 tr.className = "border-b hover:bg-gray-50 transition-colors";
                 tr.innerHTML = `
                     <td class="p-4 font-mono text-sm whitespace-nowrap text-gray-600">${c.ticket_id}</td>
                     <td class="p-4 font-semibold">${c.title}</td>
-                    <td class="p-4 whitespace-nowrap">${c.category.replace(/_/g, ' ')}</td>
-                    <td class="p-4 whitespace-nowrap"><span class="px-3 py-1 rounded-full text-xs font-bold border ${statusColor}">${c.status.toUpperCase()}</span></td>
+                    <td class="p-4 whitespace-nowrap">${categoryLabel}</td>
+                    <td class="p-4 whitespace-nowrap"><span class="px-3 py-1 rounded-full text-xs font-bold border ${statusColor}">${statusLabel.toUpperCase()}</span></td>
                     <td class="p-4 whitespace-nowrap">${actionHtml}</td>
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Re-apply translations to newly injected dynamic content
+            applyTranslations();
 
             document.querySelectorAll('.view-details-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -68,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
         } catch (error) {
-            showToast("Failed to load complaints: " + error.message, "error");
+            showToast(t('toast.loadFailed') + error.message, 'error');
         }
     }
 
@@ -79,13 +133,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('d-title').innerText = complaint.title;
         document.getElementById('d-ticket').innerText = complaint.ticket_id;
         document.getElementById('d-district').innerText = `Yaoundé ${complaint.district_id}`;
-        document.getElementById('d-desc').innerText = complaint.description || "No description provided.";
-        document.getElementById('d-location').innerText = complaint.location || "No landmark provided.";
+        document.getElementById('d-desc').innerText = complaint.description || t('details.noDescription');
+        document.getElementById('d-location').innerText = complaint.location || t('details.noLandmark');
 
         const photoEl = document.getElementById('d-photo');
         const noPhotoEl = document.getElementById('d-no-photo');
         if (complaint.photo_path) {
-            photoEl.src = `http://localhost:8000/${complaint.photo_path}`;
+            photoEl.src = `${API_HOST}/${complaint.photo_path}`;
             photoEl.classList.remove('hidden');
             noPhotoEl.classList.add('hidden');
         } else {
@@ -104,12 +158,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const resolutionBox = document.getElementById('d-resolution-box');
         if (complaint.status === 'Resolved' || complaint.status === 'Rejected') {
             resolutionBox.classList.remove('hidden');
-            document.getElementById('d-res-note').innerText = complaint.resolution_notes || "No notes provided by the municipal worker.";
+            document.getElementById('d-res-note').innerText = complaint.resolution_notes || t('details.noNotes');
             const resPhotoEl = document.getElementById('d-res-photo');
             const resNoPhotoEl = document.getElementById('d-res-no-photo');
             
             if (complaint.resolution_photo_path) {
-                resPhotoEl.src = `http://localhost:8000/${complaint.resolution_photo_path}`;
+                resPhotoEl.src = `${API_HOST}/${complaint.resolution_photo_path}`;
                 resPhotoEl.classList.remove('hidden');
                 resNoPhotoEl.classList.add('hidden');
             } else {
@@ -168,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
     openBtn.addEventListener('click', () => {
         // ════ OFFLINE GPS INTERCEPTOR ════
         if (!navigator.onLine) {
-            showToast("Interactive Maps are unavailable offline. Please type your location in the text box.", "error");
+            showToast(t('toast.mapsOffline'), 'error');
             
             // Visually disable the button temporarily
             openBtn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -187,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('c-lat').value) {
             openBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
             openBtn.classList.add('bg-brand-light', 'text-brand-dark', 'border-2', 'border-brand-green');
-            openBtn.innerHTML = '🗺️ Map Location Selected';
+            openBtn.innerHTML = '🗺️ ' + t('report.mapSelected');
             document.getElementById('map-status').classList.remove('hidden');
         }
     });
@@ -217,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!navigator.onLine) {
             try {
                 await saveComplaintOffline(formData);
-                showToast("No internet! Complaint saved to your phone. It will upload automatically when connection is restored.", "success");
+                showToast(t('toast.savedOffline'), 'success');
                 
                 // Clean up UI
                 form.reset(); 
@@ -227,11 +281,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('map-status').classList.add('hidden');
                 openBtn.classList.remove('bg-brand-light', 'text-brand-dark', 'border-2', 'border-brand-green');
                 openBtn.classList.add('bg-blue-600', 'text-white');
-                openBtn.innerHTML = 'Open Google Maps';
+                openBtn.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><span data-i18n="report.openMapBtn">${t('report.openMapBtn')}</span>`;
 
                 window.switchView('dashboard-view');
             } catch (err) {
-                showToast("Failed to save offline: " + err.message, "error");
+                showToast(t('toast.saveOfflineFailed') + err.message, 'error');
             }
             return; // Stop execution here!
         }
@@ -239,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // ════ ONLINE: NORMAL SUBMISSION ════
         try {
             await apiRequest('/citizen/complaints/', { method: 'POST', body: formData });
-            showToast("Complaint submitted successfully!", "success");
+            showToast(t('toast.ticketSubmitted'), 'success');
             
             form.reset(); 
             if (marker) { marker.setMap(null); marker = null; }
@@ -248,12 +302,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('map-status').classList.add('hidden');
             openBtn.classList.remove('bg-brand-light', 'text-brand-dark', 'border-2', 'border-brand-green');
             openBtn.classList.add('bg-blue-600', 'text-white');
-            openBtn.innerHTML = 'Open Google Maps';
+            openBtn.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><span data-i18n="report.openMapBtn">${t('report.openMapBtn')}</span>`;
 
             window.switchView('dashboard-view');
             loadComplaints();
         } catch (error) {
-            showToast("Failed to submit: " + error.message, "error");
+            showToast(t('toast.submitFailed') + error.message, 'error');
         }
     });
 
