@@ -20,6 +20,9 @@ UPLOAD_DIR = "uploads"
 class StatusUpdate(BaseModel):
     status: schemas.ComplaintStatus
 
+class ReassignUpdate(BaseModel):
+    district_id: int
+
 @router.get("/", response_model=List[schemas.ComplaintResponse])
 def get_my_district_complaints(
     db: DbSession,
@@ -58,6 +61,37 @@ def update_complaint_status_json(
     
     return complaint
 
+@router.patch("/{complaint_id}/reassign", response_model=schemas.ComplaintResponse)
+def reassign_complaint_district(
+    complaint_id: int,
+    payload: ReassignUpdate,
+    db: DbSession,
+    staff_id: Annotated[int, Depends(security.get_current_staff_id)]
+):
+    """Reassigns a misclassified complaint to the correct Yaoundé district."""
+    # 1. Identify the logged-in staff member
+    staff = db.query(models.Staff).filter(models.Staff.id == staff_id).first()
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff account not found.")
+
+    # 2. Find the specific complaint
+    complaint = db.query(models.Complaint).filter(models.Complaint.id == complaint_id).first()
+    if not complaint:
+        raise HTTPException(status_code=404, detail="Complaint not found")
+
+    # 3. Security Check: Staff can only reassign tickets currently sitting in their own district
+    if complaint.district_id != staff.district_id:
+        raise HTTPException(
+            status_code=403, 
+            detail="Forbidden: You can only reassign complaints that are currently in your district."
+        )
+
+    # 4. Execute the reassignment
+    complaint.district_id = payload.district_id
+    db.commit()
+    db.refresh(complaint)
+    
+    return complaint
 
 # (Optional) Keep your original resolve endpoint if you plan to build the photo upload form later!
 @router.patch("/{complaint_id}/resolve", response_model=schemas.ComplaintResponse)

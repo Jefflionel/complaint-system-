@@ -1,5 +1,5 @@
 // frontend/sw.js
-const CACHE_NAME = 'yaounde-civic-v10'; // v10: full i18n pass + mobile sidebar fix
+const CACHE_NAME = 'yaounde-civic-v13'; 
 
 // The core files that make up your application shell
 const ASSETS_TO_CACHE = [

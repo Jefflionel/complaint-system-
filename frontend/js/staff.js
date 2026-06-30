@@ -4,7 +4,7 @@ import { showToast } from './utils/toast.js';
 import { setupUI } from './utils/ui.js';
 import { setupStaffMap, showStaffMap } from './utils/maps.js';
 import { loadAnalytics, setupAnalyticsEvents } from './utils/analytics.js';
-import { initStaffForum } from './staff-forum.js'; 
+import { initStaffForum } from './staff-forum.js';
 import { initProfile } from './utils/profile.js';
 import { initI18n, applyTranslations, t } from './utils/i18n.js';
 
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const token = localStorage.getItem('token');
     const userType = localStorage.getItem('user_type');
-    
+
     if (!token || userType !== 'staff') {
         window.location.href = 'index.html';
         return;
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Settings: Logout
     document.getElementById('settings-logout-btn').addEventListener('click', () => {
-        localStorage.clear(); 
+        localStorage.clear();
         window.location.href = 'index.html';
     });
 
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupStaffMap();
     setupAnalyticsEvents();
     loadAnalytics();
-    initStaffForum(); 
+    initStaffForum();
     initProfile();
 
     // Populate the sidebar with the logged-in staff member's name
@@ -76,11 +76,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let currentComplaints = [];
 
+    // Expose function globally so the reassign logic can call it
+    window.loadMasterComplaints = loadMasterComplaints;
+
     async function loadMasterComplaints() {
         try {
             currentComplaints = await apiRequest('/staff/complaints/');
             const tbody = document.getElementById('staff-table-body');
-            
+
             let pendingCount = 0;
             let resolvedCount = 0;
 
@@ -104,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 let statusColor = c.status === 'Resolved' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200';
                 if (c.status === 'In Progress') statusColor = 'bg-blue-100 text-blue-800 border-blue-200';
                 if (c.status === 'Rejected') statusColor = 'bg-red-100 text-red-800 border-red-200';
-                
+
                 let actionHtml = '';
                 if (c.status === 'Rejected' || c.status === 'Resolved') {
                     actionHtml = `<span class="text-gray-400 text-sm font-semibold flex items-center cursor-not-allowed"><svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>${t('staff.locked')}</span>`;
@@ -142,7 +145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('.review-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const targetBtn = e.target.closest('button');
-                    if(targetBtn) openReview(targetBtn.dataset.id);
+                    if (targetBtn) openReview(targetBtn.dataset.id);
                 });
             });
 
@@ -162,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('r-district').innerText = `Yaoundé ${complaint.district_id}`;
         document.getElementById('r-desc').innerText = complaint.description || t('staff.noDescription');
         document.getElementById('r-location').innerText = complaint.location || t('staff.noLandmark');
-        
+
         let reporterHtml = '';
         if (complaint.is_anonymous) {
             reporterHtml = `<div class="text-gray-500 italic">🕵️ ${t('staff.submittedAnon')}</div>`;
@@ -175,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const viewMapBtn = document.getElementById('s-view-map-btn');
         const noGpsMsg = document.getElementById('s-no-gps-msg');
-        
+
         if (complaint.latitude && complaint.longitude) {
             viewMapBtn.classList.remove('hidden');
             noGpsMsg.classList.add('hidden');
@@ -202,9 +205,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const statusSelect = document.getElementById('r-status');
         const actionBlock = document.getElementById('action-block');
         const lockedBlock = document.getElementById('locked-block');
-        
+
         statusSelect.value = complaint.status;
-        
+
         if (complaint.status === 'Resolved' || complaint.status === 'Rejected') {
             statusSelect.disabled = true;
             actionBlock.classList.add('hidden');
@@ -233,8 +236,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             resolutionFields.classList.add('hidden');
             resolutionNote.removeAttribute('required');
-            resolutionNote.value = ''; 
-            document.getElementById('r-res-photo').value = ''; 
+            resolutionNote.value = '';
+            document.getElementById('r-res-photo').value = '';
         }
     }
 
@@ -260,7 +263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             showToast(t('toast.updateSuccess'), 'success');
             window.switchView('dashboard-view');
-            loadMasterComplaints(); 
+            loadMasterComplaints();
 
         } catch (error) {
             showToast(t('toast.updateFailed') + error.message, 'error');
@@ -269,3 +272,69 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     loadMasterComplaints();
 });
+
+// ═══════════════════════════════════════════════════════
+    // UPGRADED REASSIGN TICKET LOGIC (WITH MODAL & LOADING STATE)
+    // ═══════════════════════════════════════════════════════
+    const reassignModal = document.getElementById('reassign-modal');
+    const confirmReassignBtn = document.getElementById('confirm-reassign-btn');
+    const cancelReassignBtn = document.getElementById('cancel-reassign-btn');
+    const reassignBtnText = document.getElementById('reassign-btn-text');
+
+    // 1. Open the Modal when "Transfer Ticket" is clicked
+    document.getElementById('reassign-btn').addEventListener('click', () => {
+        const newDistrictId = document.getElementById('r-reassign-district').value;
+        const currentDistrictText = document.getElementById('r-district').innerText;
+
+        // Prevent reassignment to the exact same district
+        if (currentDistrictText.includes(newDistrictId)) {
+            showToast("This ticket is already in Yaoundé " + newDistrictId, "error");
+            return;
+        }
+
+        // Setup and show modal
+        document.getElementById('reassign-target-name').innerText = `Yaoundé ${newDistrictId}`;
+        reassignModal.classList.remove('hidden');
+    });
+
+    // 2. Close Modal on Cancel
+    cancelReassignBtn.addEventListener('click', () => {
+        reassignModal.classList.add('hidden');
+    });
+
+    // 3. Execute Transfer on Confirm
+    confirmReassignBtn.addEventListener('click', async () => {
+        const complaintId = document.getElementById('r-id').value;
+        const newDistrictId = document.getElementById('r-reassign-district').value;
+
+        // UI Loading State
+        confirmReassignBtn.disabled = true;
+        reassignBtnText.innerText = "Transferring...";
+        confirmReassignBtn.classList.add('opacity-75', 'cursor-not-allowed');
+
+        try {
+            await apiRequest(`/staff/complaints/${complaintId}/reassign`, {
+                method: 'PATCH',
+                body: JSON.stringify({ district_id: parseInt(newDistrictId) })
+            });
+
+            showToast(`Ticket successfully transferred to Yaoundé ${newDistrictId}`, 'success');
+            
+            // Clean up and refresh UI automatically!
+            reassignModal.classList.add('hidden');
+            window.switchView('dashboard-view');
+            
+            // This will no longer throw an error!
+            if (typeof window.loadMasterComplaints === 'function') {
+                window.loadMasterComplaints(); 
+            }
+
+        } catch (error) {
+            showToast('Failed to transfer ticket: ' + error.message, 'error');
+        } finally {
+            // Reset Button State
+            confirmReassignBtn.disabled = false;
+            reassignBtnText.innerText = "Transfer Now";
+            confirmReassignBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        }
+    });

@@ -2,7 +2,7 @@
 import { apiRequest } from './api.js';
 import { showToast } from './utils/toast.js';
 import { setupUI } from './utils/ui.js';
-import { initCitizenForum } from './citizen-forum.js'; 
+import { initCitizenForum } from './citizen-forum.js';
 import { saveComplaintOffline, syncOfflineComplaints } from './utils/offline.js';
 import { initProfile } from './utils/profile.js';
 import { initI18n, applyTranslations, t } from './utils/i18n.js';
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initialize UI and Forum
     setupUI();
-    initCitizenForum(); 
+    initCitizenForum();
     initProfile();
 
     // Populate the sidebar with the logged-in user's name
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             currentComplaints = await apiRequest('/citizen/complaints/me');
             const tbody = document.getElementById('complaints-table-body');
-            
+
             tbody.innerHTML = '';
             if (currentComplaints.length === 0) {
                 tbody.innerHTML = `
@@ -89,12 +89,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 applyTranslations();
                 return;
             }
-            
+
             currentComplaints.forEach(c => {
                 let statusColor = c.status === 'Resolved' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200';
                 if (c.status === 'In Progress') statusColor = 'bg-blue-100 text-blue-800 border-blue-200';
                 if (c.status === 'Rejected') statusColor = 'bg-red-100 text-red-800 border-red-200';
-                
+
                 const categoryLabel = t('category.' + c.category) || c.category.replace(/_/g, ' ');
                 const statusLabel = t('status.' + c.status) || c.status;
                 const actionHtml = `<button class="view-details-btn bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-1.5 rounded text-sm font-bold shadow-sm transition-all" data-i18n="dashboard.viewDetails" data-id="${c.id}">View Details</button>`;
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('.view-details-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const targetBtn = e.target.closest('button');
-                    if(targetBtn) openTicketDetails(targetBtn.dataset.id);
+                    if (targetBtn) openTicketDetails(targetBtn.dataset.id);
                 });
             });
 
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('d-res-note').innerText = complaint.resolution_notes || t('details.noNotes');
             const resPhotoEl = document.getElementById('d-res-photo');
             const resNoPhotoEl = document.getElementById('d-res-no-photo');
-            
+
             if (complaint.resolution_photo_path) {
                 resPhotoEl.src = `${API_HOST}/${complaint.resolution_photo_path}`;
                 resPhotoEl.classList.remove('hidden');
@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeBtn = document.getElementById('confirm-map-btn');
 
     function setCoordinates(lat, lng) {
-        if (marker) map.removeLayer(marker);
+        if (marker) marker.setMap(null); // Fix: Correct Google Maps method to remove pin
         marker = new google.maps.Marker({ position: { lat: lat, lng: lng }, map: map, animation: google.maps.Animation.DROP });
         document.getElementById('c-lat').value = lat;
         document.getElementById('c-lng').value = lng;
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ════ OFFLINE GPS INTERCEPTOR ════
         if (!navigator.onLine) {
             showToast(t('toast.mapsOffline'), 'error');
-            
+
             // Visually disable the button temporarily
             openBtn.classList.add('opacity-50', 'cursor-not-allowed');
             setTimeout(() => openBtn.classList.remove('opacity-50', 'cursor-not-allowed'), 3000);
@@ -234,21 +234,94 @@ document.addEventListener('DOMContentLoaded', async () => {
         mapOverlay.classList.add('flex');
         if (!mapInitialized && typeof google !== 'undefined') initGoogleMap();
     });
-    
+
     closeBtn.addEventListener('click', () => {
+        const latInput = document.getElementById('c-lat').value;
+        const lngInput = document.getElementById('c-lng').value;
+
+        // 1. Hide the map overlay immediately for a snappy UX
         mapOverlay.classList.add('hidden');
         mapOverlay.classList.remove('flex');
-        if (document.getElementById('c-lat').value) {
+
+        if (latInput && lngInput) {
+            // 2. Update the button UI to show the location was saved
             openBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
             openBtn.classList.add('bg-brand-light', 'text-brand-dark', 'border-2', 'border-brand-green');
-            openBtn.innerHTML = '🗺️ ' + t('report.mapSelected');
+            openBtn.innerHTML = '🗺️ ' + (t('report.mapSelected') || 'Location Saved');
             document.getElementById('map-status').classList.remove('hidden');
+
+            // 3. Initialize Reverse Geocoding
+            const geocoder = new google.maps.Geocoder();
+            const latlng = { lat: parseFloat(latInput), lng: parseFloat(lngInput) };
+
+            // 4. Ask Google for the address string
+            geocoder.geocode({ location: latlng }, (results, status) => {
+                if (status === "OK" && results.length > 0) {
+
+                    // THE FIX: Dig deep into ALL of Google's data layers
+                    let rawAddressData = "";
+                    results.forEach(res => {
+                        // Grab the formatted address
+                        rawAddressData += res.formatted_address + " ";
+                        // Dig into the hidden components to catch neighborhoods Google might bury
+                        if (res.address_components) {
+                            res.address_components.forEach(comp => {
+                                rawAddressData += comp.long_name + " ";
+                            });
+                        }
+                    });
+
+                    // Normalize: lowercase AND remove all French accents/diacritics
+                    const address = rawAddressData
+                        .toLowerCase()
+                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                    console.log("🔍 Deep Scan Data:", address); // Watch this catch everything now!
+
+                    // 5. The Extended Yaoundé Municipal Dictionary 
+                    const yaoundeDistricts = {
+                        'bastos': '1', 'emana': '1', 'nlongkak': '1', 'etoudi': '1', 'oliga': '1', 'mballa 1': '1', 'mballa 2': '1', 'messassi': '1', 'tongolo': '1', 'olembe': '1', 'etoa meki': '1', 'etoa-meki': '1',
+                        'tsinga': '2', 'mokolo': '2', 'briqueterie': '2', 'nkomkana': '2', 'febe': '2', 'messa': '2', 'cite verte': '2', 'madagascar': '2', 'grand messa': '2', 'ekoudou': '2',
+                        'melen': '3', 'ngoa-ekelle': '3', 'ngoa ekelle': '3', 'obili': '3', 'efoulan': '3', 'ahala': '3', 'olezoa': '3', 'nsimeyong': '3', 'obobogo': '3', 'nsam': '3', 'mekoumbou': '3',
+                        'kondengui': '4', 'ekounou': '4', 'mvan': '4', 'nkolndongo': '4', 'odza': '4', 'nkomo': '4', 'awae': '4', 'anguissa': '4', 'mvog mbi': '4',
+                        'essos': '5', 'mimboman': '5', 'ngousso': '5', 'mvog-ada': '5', 'mvog ada': '5', 'nkolmesseng': '5', 'fouda': '5', 'mfandena': '5', 'eleveur': '5', 'ngoulmekong': '5',
+                        'biyem-assi': '6', 'biyem assi': '6', 'mendong': '6', 'etoug-ebe': '6', 'etoug ebe': '6', 'mvog-betsi': '6', 'simbock': '6', 'elig-effa': '6', 'nkolbikok': '6',
+                        'nkolbisson': '7', 'oyomabang': '7', 'oyom abang': '7', 'nkolso': '7', 'nkol-so': '7', 'etetak': '7', 'minkoameyos': '7'
+                    };
+
+                    // Sort the dictionary keys by length (longest first) to prevent partial matches
+                    const sortedQuarters = Object.keys(yaoundeDistricts).sort((a, b) => b.length - a.length);
+
+                    // 6. Scan the combined deep address for a quarter match
+                    for (const quarter of sortedQuarters) {
+                        const districtId = yaoundeDistricts[quarter];
+                        const cleanQuarter = quarter.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                        if (address.includes(cleanQuarter)) {
+                            // Update the dropdown automatically
+                            document.getElementById('c-district').value = districtId;
+
+                            // Alert the user
+                            showToast(`📍 Auto-detected ${quarter.toUpperCase()}. District set to Yaoundé ${districtId}.`, 'success');
+                            break;
+                        }
+                    }
+                }
+            });
         }
     });
 
     const form = document.getElementById('complaint-form');
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        // ════ STRICT PHOTO ENFORCEMENT ════
+        const photoFile = document.getElementById('c-photo').files[0];
+        if (!photoFile) {
+            showToast("A photo is mandatory by force to submit a complaint.", "error");
+            return;
+        }
+
         const formData = new FormData();
         formData.append('title', document.getElementById('c-title').value);
         formData.append('description', document.getElementById('c-desc').value);
@@ -256,25 +329,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         formData.append('category_name', document.getElementById('c-category').value);
         formData.append('district_id', document.getElementById('c-district').value);
         formData.append('is_anonymous', document.getElementById('c-anon').checked);
-        
+        formData.append('photo', photoFile);
+
         const lat = document.getElementById('c-lat').value;
         const lng = document.getElementById('c-lng').value;
         if (lat && lng) {
             formData.append('latitude', lat);
             formData.append('longitude', lng);
         }
-        
-        const photoFile = document.getElementById('c-photo').files[0];
-        if (photoFile) formData.append('photo', photoFile);
 
         // ════ OFFLINE CHECK ════
         if (!navigator.onLine) {
             try {
                 await saveComplaintOffline(formData);
                 showToast(t('toast.savedOffline'), 'success');
-                
+
                 // Clean up UI
-                form.reset(); 
+                form.reset();
                 if (marker) { marker.setMap(null); marker = null; }
                 document.getElementById('c-lat').value = '';
                 document.getElementById('c-lng').value = '';
@@ -294,8 +365,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             await apiRequest('/citizen/complaints/', { method: 'POST', body: formData });
             showToast(t('toast.ticketSubmitted'), 'success');
-            
-            form.reset(); 
+
+            form.reset();
             if (marker) { marker.setMap(null); marker = null; }
             document.getElementById('c-lat').value = '';
             document.getElementById('c-lng').value = '';
