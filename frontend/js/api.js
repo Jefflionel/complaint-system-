@@ -1,7 +1,7 @@
 // frontend/js/api.js
 
 const isLocal = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') || window.location.protocol === 'file:';
-const BASE_URL = isLocal ? 'http://localhost:8000/api' : '/api';
+const BASE_URL = isLocal ? 'http://localhost:8000/api' : 'https://citizenhub-api-xz2y.onrender.com/api';
 
 export async function apiRequest(endpoint, options = {}) {
     const token = localStorage.getItem("token");
