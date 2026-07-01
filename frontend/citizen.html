@@ -7,13 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#16a34a">
-   <script type="module">
-        import { GOOGLE_MAPS_API_KEY } from './js/config.js';
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
-        script.async = true;
-        document.head.appendChild(script);
-    </script>
+   <script>
+    const GOOGLE_MAPS_API_KEY = 'AIzaSyC99GptmlNtNGzbuoEClFUiOg562AB4OeY'; 
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places`;
+    script.async = true;
+    document.head.appendChild(script);
+</script>
     <script>
         tailwind.config = { theme: { extend: { colors: { brand: { green: '#16a34a', dark: '#15803d', light: '#dcfce7' } } } } }
     </script>

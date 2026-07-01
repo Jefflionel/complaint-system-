@@ -2,19 +2,19 @@
   "name": "Yaoundé Citizen Hub",
   "short_name": "CitizenHub",
   "description": "Report local infrastructure issues and track municipal responses in Yaoundé.",
-  "start_url": "/frontend/index.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#16a34a",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/frontend/assets/icons/icon-192.png",
+      "src": "/assets/icons/icon-192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/frontend/assets/icons/icon-512.png",
+      "src": "/assets/icons/icon-512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
