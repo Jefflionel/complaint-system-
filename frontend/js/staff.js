@@ -9,7 +9,7 @@ import { initProfile } from './utils/profile.js';
 import { initI18n, applyTranslations, t } from './utils/i18n.js';
 
 const isLocal = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') || window.location.protocol === 'file:';
-const API_HOST = isLocal ? 'http://localhost:8000' : '';
+const API_HOST = isLocal ? 'http://localhost:8000' : 'https://citizenhub-api-xz2y.onrender.com';
 
 document.addEventListener('DOMContentLoaded', async () => {
     await initI18n(); // Start the translation engine first
